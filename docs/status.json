@@ -1,4 +1,5 @@
 {
+<<<<<<< Updated upstream
   "timestamp": "2026-03-16T14:51:51Z",
   "username": "irvaaanfauzi",
   "summary": {
@@ -7,13 +8,27 @@
     "failed": 0,
     "warnings": 16,
     "overall": "pass"
+=======
+  "timestamp": "2026-03-16T14:53:15Z",
+  "username": "irvaaanfauzi",
+  "summary": {
+    "total": 55,
+    "passed": 33,
+    "failed": 3,
+    "warnings": 19,
+    "overall": "fail"
+>>>>>>> Stashed changes
   },
   "tests": [
     {
       "name": "Skill Version",
       "category": "meta",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 189,
+=======
+      "duration_ms": 152,
+>>>>>>> Stashed changes
       "data": {
         "version": "0.1.12",
         "name": "agentwallet",
@@ -25,7 +40,11 @@
       "name": "Skill.json Full Metadata",
       "category": "meta",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 141,
+=======
+      "duration_ms": 147,
+>>>>>>> Stashed changes
       "data": {
         "api_base": "https://frames.ag/api/v1",
         "x402_chains": [],
@@ -44,7 +63,11 @@
       "name": "Heartbeat.md Reachable",
       "category": "meta",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 261,
+=======
+      "duration_ms": 218,
+>>>>>>> Stashed changes
       "data": {
         "bytes": 3083,
         "status": 200,
@@ -56,7 +79,11 @@
       "name": "Network Pulse",
       "category": "public",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 230,
+=======
+      "duration_ms": 265,
+>>>>>>> Stashed changes
       "data": {
         "active_agents": null,
         "tx_count": null,
@@ -69,7 +96,11 @@
       "name": "Wallet Connected (public)",
       "category": "public",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 210,
+=======
+      "duration_ms": 206,
+>>>>>>> Stashed changes
       "data": {
         "connected": true,
         "evm": "0x006aE819C09D...",
@@ -81,7 +112,11 @@
       "name": "Connect Start Endpoint",
       "category": "public",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 298,
+=======
+      "duration_ms": 373,
+>>>>>>> Stashed changes
       "data": {
         "status_code": 200,
         "endpoint": "alive"
@@ -92,7 +127,11 @@
       "name": "Wallet Info",
       "category": "wallet",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 198,
+=======
+      "duration_ms": 197,
+>>>>>>> Stashed changes
       "data": {
         "evm": "0x006aE819C09D...",
         "solana": "JBxX4ssBYhycMk..."
@@ -103,10 +142,14 @@
       "name": "Balances All Chains",
       "category": "wallet",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 692,
+=======
+      "duration_ms": 256,
+>>>>>>> Stashed changes
       "data": {
         "total_usd": null,
-        "raw": "{'username': 'irvaaanfauzi', 'displayName': 'irvaaanfauzi', 'moltbookUsername': None, 'evmWallets': [{'address': '0x006aE819C09D60b30d6c123a9910Ddfe5ec3fE7C', 'walletId': 'cd26d8c3-ad7a-4d91-8216-e9ce88337737', 'privyWalletId': 'vhbabfnpmsjrta6mrjix0eyz', 'balances': [{'chain': 'bsc', 'asset': 'bnb'"
+        "raw": "{'username': 'irvaaanfauzi', 'displayName': 'irvaaanfauzi', 'moltbookUsername': None, 'evmWallets': [{'address': '0x006aE819C09D60b30d6c123a9910Ddfe5ec3fE7C', 'walletId': 'cd26d8c3-ad7a-4d91-8216-e9ce88337737', 'privyWalletId': 'vhbabfnpmsjrta6mrjix0eyz', 'balances': [{'chain': 'arbitrum', 'asset': "
       },
       "error": null
     },
@@ -114,7 +157,11 @@
       "name": "Activity Feed (authenticated)",
       "category": "wallet",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 226,
+=======
+      "duration_ms": 235,
+>>>>>>> Stashed changes
       "data": {
         "event_count": "?",
         "event_types": []
@@ -125,7 +172,11 @@
       "name": "Activity Feed (public)",
       "category": "wallet",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 221,
+=======
+      "duration_ms": 223,
+>>>>>>> Stashed changes
       "data": {
         "public_events": "?"
       },
@@ -135,7 +186,11 @@
       "name": "Stats & Rank",
       "category": "wallet",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 255,
+=======
+      "duration_ms": 283,
+>>>>>>> Stashed changes
       "data": {
         "rank": 5,
         "tier": null,
@@ -150,7 +205,11 @@
       "name": "List Wallets",
       "category": "wallet",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 209,
+=======
+      "duration_ms": 250,
+>>>>>>> Stashed changes
       "data": {
         "count": 2,
         "tier": "bronze",
@@ -169,7 +228,11 @@
       "name": "Create Wallet EVM",
       "category": "wallet",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 208,
+=======
+      "duration_ms": 290,
+>>>>>>> Stashed changes
       "data": null,
       "error": "Tier limit (expected Bronze): Wallet limit reached for your tier (bronze). Limit: 1 per chain"
     },
@@ -177,7 +240,11 @@
       "name": "Create Wallet Solana",
       "category": "wallet",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 199,
+=======
+      "duration_ms": 211,
+>>>>>>> Stashed changes
       "data": null,
       "error": "Tier limit (expected Bronze): Wallet limit reached for your tier (bronze). Limit: 1 per chain"
     },
@@ -185,7 +252,11 @@
       "name": "Referrals & Tier Progress",
       "category": "referrals",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 209,
+=======
+      "duration_ms": 220,
+>>>>>>> Stashed changes
       "data": {
         "referral_count": 0,
         "multiplier": "1x Bronze",
@@ -199,7 +270,11 @@
       "name": "Policy GET",
       "category": "policy",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 208,
+=======
+      "duration_ms": 225,
+>>>>>>> Stashed changes
       "data": {
         "max_per_tx_usd": null,
         "allow_chains": [],
@@ -212,7 +287,11 @@
       "name": "Policy PATCH/PUT",
       "category": "policy",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 400,
+=======
+      "duration_ms": 394,
+>>>>>>> Stashed changes
       "data": null,
       "error": "Policy write 400 \u2014 Invalid request"
     },
@@ -220,7 +299,11 @@
       "name": "x402 DryRun auto-chain",
       "category": "x402",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 1324,
+=======
+      "duration_ms": 1375,
+>>>>>>> Stashed changes
       "data": {
         "dry_run": true,
         "required": true,
@@ -234,7 +317,11 @@
       "name": "x402 DryRun EVM",
       "category": "x402",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 418,
+=======
+      "duration_ms": 409,
+>>>>>>> Stashed changes
       "data": {
         "dry_run": true,
         "required": true,
@@ -248,7 +335,11 @@
       "name": "x402 DryRun Solana",
       "category": "x402",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 404,
+=======
+      "duration_ms": 392,
+>>>>>>> Stashed changes
       "data": {
         "dry_run": true,
         "required": true,
@@ -262,7 +353,11 @@
       "name": "x402 DryRun USDC token",
       "category": "x402",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 661,
+=======
+      "duration_ms": 644,
+>>>>>>> Stashed changes
       "data": {
         "dry_run": true,
         "required": true,
@@ -276,7 +371,11 @@
       "name": "x402 DryRun USDT token",
       "category": "x402",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 964,
+=======
+      "duration_ms": 803,
+>>>>>>> Stashed changes
       "data": {
         "dry_run": true,
         "required": true,
@@ -290,7 +389,11 @@
       "name": "x402 DryRun CASH token",
       "category": "x402",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 552,
+=======
+      "duration_ms": 677,
+>>>>>>> Stashed changes
       "data": {
         "dry_run": true,
         "required": true,
@@ -304,7 +407,11 @@
       "name": "x402 DryRun EVM+USDC",
       "category": "x402",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 403,
+=======
+      "duration_ms": 387,
+>>>>>>> Stashed changes
       "data": {
         "dry_run": true,
         "required": true,
@@ -318,7 +425,11 @@
       "name": "x402 DryRun EVM+USDT",
       "category": "x402",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 412,
+=======
+      "duration_ms": 394,
+>>>>>>> Stashed changes
       "data": {
         "dry_run": true,
         "required": true,
@@ -332,7 +443,11 @@
       "name": "x402 DryRun Solana+USDC",
       "category": "x402",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 537,
+=======
+      "duration_ms": 403,
+>>>>>>> Stashed changes
       "data": {
         "dry_run": true,
         "required": true,
@@ -346,7 +461,11 @@
       "name": "x402 DryRun Solana+CASH",
       "category": "x402",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 422,
+=======
+      "duration_ms": 609,
+>>>>>>> Stashed changes
       "data": {
         "dry_run": true,
         "required": true,
@@ -360,7 +479,11 @@
       "name": "x402 DryRun timeout option",
       "category": "x402",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 1359,
+=======
+      "duration_ms": 1264,
+>>>>>>> Stashed changes
       "data": {
         "dry_run": true,
         "required": true,
@@ -374,7 +497,11 @@
       "name": "x402 DryRun preferredChainId",
       "category": "x402",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 1367,
+=======
+      "duration_ms": 1277,
+>>>>>>> Stashed changes
       "data": {
         "dry_run": true,
         "required": true,
@@ -388,7 +515,11 @@
       "name": "x402 DryRun idempotencyKey",
       "category": "x402",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 341,
+=======
+      "duration_ms": 339,
+>>>>>>> Stashed changes
       "data": {
         "dry_run": true,
         "required": true,
@@ -402,7 +533,11 @@
       "name": "x402 Error INVALID_URL",
       "category": "x402",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 359,
+=======
+      "duration_ms": 351,
+>>>>>>> Stashed changes
       "data": {
         "error": "HTTPS required in production. HTTP is allowed automatically in development mode, or set X402_ALLOW_HTTP=true to override.",
         "code": "",
@@ -414,7 +549,11 @@
       "name": "x402 Legacy /pay endpoint",
       "category": "x402",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 356,
+=======
+      "duration_ms": 336,
+>>>>>>> Stashed changes
       "data": {
         "status_code": 400,
         "endpoint": "alive",
@@ -426,13 +565,18 @@
       "name": "x402 REAL Fetch (earns TX pts!)",
       "category": "x402",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 212,
+=======
+      "duration_ms": 607,
+>>>>>>> Stashed changes
       "data": null,
       "error": "Balance too low for real fetch ($0.0000 < $0.05) \u2014 fund wallet to earn TX points"
     },
     {
       "name": "Sign Message Ethereum",
       "category": "actions",
+<<<<<<< Updated upstream
       "status": "pass",
       "duration_ms": 559,
       "data": {
@@ -440,10 +584,17 @@
         "signed": true
       },
       "error": null
+=======
+      "status": "fail",
+      "duration_ms": 207,
+      "data": null,
+      "error": "429 Client Error: Too Many Requests for url: https://frames.ag/api/wallets/irvaaanfauzi/actions/sign-message"
+>>>>>>> Stashed changes
     },
     {
       "name": "Sign Message Solana",
       "category": "actions",
+<<<<<<< Updated upstream
       "status": "pass",
       "duration_ms": 522,
       "data": {
@@ -451,10 +602,17 @@
         "signed": true
       },
       "error": null
+=======
+      "status": "fail",
+      "duration_ms": 191,
+      "data": null,
+      "error": "429 Client Error: Too Many Requests for url: https://frames.ag/api/wallets/irvaaanfauzi/actions/sign-message"
+>>>>>>> Stashed changes
     },
     {
       "name": "Sign with walletAddress param",
       "category": "actions",
+<<<<<<< Updated upstream
       "status": "pass",
       "duration_ms": 537,
       "data": {
@@ -463,18 +621,29 @@
         "wallet_address_param": "0x006aE819C09D..."
       },
       "error": null
+=======
+      "status": "fail",
+      "duration_ms": 172,
+      "data": null,
+      "error": "429 Client Error: Too Many Requests for url: https://frames.ag/api/wallets/irvaaanfauzi/actions/sign-message"
+>>>>>>> Stashed changes
     },
     {
       "name": "Faucet Solana Devnet",
       "category": "actions",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 329,
+=======
+      "duration_ms": 178,
+>>>>>>> Stashed changes
       "data": null,
       "error": "Faucet rate-limited (3/24h) \u2014 used today already"
     },
     {
       "name": "Transfer Base (8453)",
       "category": "networks",
+<<<<<<< Updated upstream
       "status": "pass",
       "duration_ms": 815,
       "data": {
@@ -482,66 +651,103 @@
         "resp": "{'actionId': '2cf0513e-27b5-48f2-baa7-6f5a378ab43c', 'status': 'confirmed', 'txHash': '0xebc0ebbf813ed1a318d8f0f03d4c2b6"
       },
       "error": null
+=======
+      "status": "warn",
+      "duration_ms": 183,
+      "data": null,
+      "error": "chainId=8453 returned 429 rate-limit (server-side issue)"
+>>>>>>> Stashed changes
     },
     {
       "name": "Transfer Optimism (10)",
       "category": "networks",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 699,
+=======
+      "duration_ms": 184,
+>>>>>>> Stashed changes
       "data": null,
-      "error": "chainId=10 returned 500 server error (server-side issue)"
+      "error": "chainId=10 returned 429 rate-limit (server-side issue)"
     },
     {
       "name": "Transfer Polygon (137)",
       "category": "networks",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 1070,
+=======
+      "duration_ms": 181,
+>>>>>>> Stashed changes
       "data": null,
-      "error": "chainId=137 returned 500 server error (server-side issue)"
+      "error": "chainId=137 returned 429 rate-limit (server-side issue)"
     },
     {
       "name": "Transfer Arbitrum (42161)",
       "category": "networks",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 710,
+=======
+      "duration_ms": 181,
+>>>>>>> Stashed changes
       "data": null,
-      "error": "chainId=42161 returned 500 server error (server-side issue)"
+      "error": "chainId=42161 returned 429 rate-limit (server-side issue)"
     },
     {
       "name": "Transfer BNB (56)",
       "category": "networks",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 30060,
       "data": null,
       "error": "Chain 56 timed out (30s)"
+=======
+      "duration_ms": 180,
+      "data": null,
+      "error": "chainId=56 returned 429 rate-limit (server-side issue)"
+>>>>>>> Stashed changes
     },
     {
       "name": "Transfer Ethereum (1)",
       "category": "networks",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 9037,
+=======
+      "duration_ms": 185,
+>>>>>>> Stashed changes
       "data": null,
-      "error": "chainId=1 returned 500 server error (server-side issue)"
+      "error": "chainId=1 returned 429 rate-limit (server-side issue)"
     },
     {
       "name": "Transfer Gnosis (100)",
       "category": "networks",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 1711,
+=======
+      "duration_ms": 186,
+>>>>>>> Stashed changes
       "data": null,
-      "error": "chainId=100 returned 500 server error (server-side issue)"
+      "error": "chainId=100 returned 429 rate-limit (server-side issue)"
     },
     {
       "name": "Transfer Sepolia testnet",
       "category": "networks",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 30060,
+=======
+      "duration_ms": 199,
+>>>>>>> Stashed changes
       "data": null,
-      "error": "Chain 11155111 timed out (30s)"
+      "error": "chainId=11155111 returned 429 rate-limit (server-side issue)"
     },
     {
       "name": "Transfer Base Sepolia",
       "category": "networks",
+<<<<<<< Updated upstream
       "status": "pass",
       "duration_ms": 5805,
       "data": {
@@ -549,10 +755,17 @@
         "resp": "{'actionId': '59a2e10e-41b5-4f70-9318-7cb6673ae331', 'status': 'confirmed', 'txHash': '0x1f576b236dced38179173c745345148"
       },
       "error": null
+=======
+      "status": "warn",
+      "duration_ms": 173,
+      "data": null,
+      "error": "chainId=84532 returned 429 rate-limit (server-side issue)"
+>>>>>>> Stashed changes
     },
     {
       "name": "Transfer + idempotencyKey",
       "category": "networks",
+<<<<<<< Updated upstream
       "status": "pass",
       "duration_ms": 325,
       "data": {
@@ -560,20 +773,34 @@
         "resp": "{'actionId': '9a02931b-68b2-46e8-87fa-53ca83e2b90e', 'status': 'confirmed', 'txHash': '0xb73a726b3e0f9d5014baa0b07b1c637"
       },
       "error": null
+=======
+      "status": "warn",
+      "duration_ms": 179,
+      "data": null,
+      "error": "chainId=8453 returned 429 rate-limit (server-side issue)"
+>>>>>>> Stashed changes
     },
     {
       "name": "Transfer Solana mainnet",
       "category": "networks",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 1070,
+=======
+      "duration_ms": 189,
+>>>>>>> Stashed changes
       "data": null,
-      "error": "solana_mainnet returned 500 server error (server-side issue)"
+      "error": "solana_mainnet returned 429 rate-limit (server-side issue)"
     },
     {
       "name": "Transfer Solana devnet",
       "category": "networks",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 197,
+=======
+      "duration_ms": 183,
+>>>>>>> Stashed changes
       "data": null,
       "error": "solana_devnet returned 429 rate-limit (server-side issue)"
     },
@@ -581,7 +808,11 @@
       "name": "ContractCall EVM Base",
       "category": "networks",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 186,
+=======
+      "duration_ms": 179,
+>>>>>>> Stashed changes
       "data": null,
       "error": "evm_contract_call_base returned 429 rate-limit (server-side issue)"
     },
@@ -589,7 +820,11 @@
       "name": "ContractCall Solana devnet",
       "category": "networks",
       "status": "warn",
+<<<<<<< Updated upstream
       "duration_ms": 180,
+=======
+      "duration_ms": 183,
+>>>>>>> Stashed changes
       "data": null,
       "error": "solana_contract_call_devnet returned 429 rate-limit (server-side issue)"
     },
@@ -597,10 +832,17 @@
       "name": "Feedback category:other",
       "category": "feedback",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 259,
       "data": {
         "category": "other",
         "id": "30fa1074-9666-4f48-85cd-131f6f77ec59"
+=======
+      "duration_ms": 213,
+      "data": {
+        "category": "other",
+        "id": "23c2b083-0827-4ac4-a95c-eefc0ba551d1"
+>>>>>>> Stashed changes
       },
       "error": null
     },
@@ -608,10 +850,17 @@
       "name": "Feedback category:bug",
       "category": "feedback",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 232,
       "data": {
         "category": "bug",
         "id": "764e145a-159e-443f-90f6-27436cd5e886"
+=======
+      "duration_ms": 238,
+      "data": {
+        "category": "bug",
+        "id": "816256db-39c0-4766-9118-ddca84d2a11d"
+>>>>>>> Stashed changes
       },
       "error": null
     },
@@ -619,10 +868,17 @@
       "name": "Feedback category:feature",
       "category": "feedback",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 199,
       "data": {
         "category": "feature",
         "id": "570f1605-b4d9-4016-a411-d266a61e43d7"
+=======
+      "duration_ms": 298,
+      "data": {
+        "category": "feature",
+        "id": "c0ba61c1-32e0-4b3e-b2d4-60493eb12303"
+>>>>>>> Stashed changes
       },
       "error": null
     },
@@ -630,10 +886,17 @@
       "name": "Feedback category:stuck",
       "category": "feedback",
       "status": "pass",
+<<<<<<< Updated upstream
       "duration_ms": 218,
       "data": {
         "category": "stuck",
         "id": "47b1b81d-702b-45d3-8637-5318757512f4"
+=======
+      "duration_ms": 214,
+      "data": {
+        "category": "stuck",
+        "id": "7b8c60ff-54d4-4f75-9265-5ddd1e99aaf5"
+>>>>>>> Stashed changes
       },
       "error": null
     }
