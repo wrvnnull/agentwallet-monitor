@@ -27,14 +27,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # ── 2. Set up Python ──────────────────────────────────────
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
+          # NO cache: pip — avoids "no requirements.txt found" error
 
       # ── 3. Install dependencies ───────────────────────────────
       - name: Install dependencies
@@ -53,15 +54,20 @@ jobs:
 
       # ── 5. Commit results to repo (docs/) ─────────────────────
       - name: Commit status results
-        if: always()   # commit even if tests failed so dashboard updates
+        if: always()
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Pull latest to avoid push conflict
+          git pull --rebase origin main || git pull --rebase origin master || true
           git add docs/status.json docs/history.json
-          # Only commit if there are changes
-          git diff --cached --quiet || \
+          # Only commit if there are staged changes
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
             git commit -m "📊 monitor: $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
-          git push
+            git push origin HEAD
+          fi
 
       # ── 6. Upload run artifact (optional debug) ───────────────
       - name: Upload status artifact
@@ -70,6 +76,7 @@ jobs:
         with:
           name: monitor-status-${{ github.run_number }}
           path: docs/status.json
+          if-no-files-found: warn
           retention-days: 7
 
   # ── Optional: re-deploy GitHub Pages if docs changed ─────────
