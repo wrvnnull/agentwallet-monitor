@@ -1,0 +1,210 @@
+{
+  "timestamp": "2026-03-16T12:49:57Z",
+  "username": "irvaaanfauzi",
+  "summary": {
+    "total": 15,
+    "passed": 14,
+    "failed": 1,
+    "warnings": 0,
+    "overall": "fail"
+  },
+  "tests": [
+    {
+      "name": "Skill Version Check",
+      "category": "meta",
+      "status": "pass",
+      "duration_ms": 193,
+      "data": {
+        "version": "0.1.12"
+      },
+      "error": null
+    },
+    {
+      "name": "Heartbeat.md Reachable",
+      "category": "meta",
+      "status": "pass",
+      "duration_ms": 190,
+      "data": {
+        "content_length": 3083,
+        "status_code": 200
+      },
+      "error": null
+    },
+    {
+      "name": "Network Pulse",
+      "category": "public",
+      "status": "pass",
+      "duration_ms": 333,
+      "data": {
+        "active_agents": null,
+        "tx_count": null,
+        "volume": null,
+        "trending_apis": []
+      },
+      "error": null
+    },
+    {
+      "name": "Wallet Connected (Public)",
+      "category": "public",
+      "status": "pass",
+      "duration_ms": 471,
+      "data": {
+        "connected": {
+          "id": "cd26d8c3-ad7a-4d91-8216-e9ce88337737",
+          "userId": "fff36aa1-b69f-4a08-8317-be61429ad0d5",
+          "chainType": "ethereum",
+          "privyWalletId": "vhbabfnpmsjrta6mrjix0eyz",
+          "address": "0x006aE819C09D60b30d6c123a9910Ddfe5ec3fE7C",
+          "policyIds": [],
+          "frozen": false,
+          "createdAt": "2026-03-10T14:54:34.916Z",
+          "updatedAt": "2026-03-10T14:54:34.916Z"
+        }
+      },
+      "error": null
+    },
+    {
+      "name": "Wallet Info",
+      "category": "wallet",
+      "status": "pass",
+      "duration_ms": 252,
+      "data": {
+        "connected": {
+          "id": "cd26d8c3-ad7a-4d91-8216-e9ce88337737",
+          "userId": "fff36aa1-b69f-4a08-8317-be61429ad0d5",
+          "chainType": "ethereum",
+          "privyWalletId": "vhbabfnpmsjrta6mrjix0eyz",
+          "address": "0x006aE819C09D60b30d6c123a9910Ddfe5ec3fE7C",
+          "policyIds": [],
+          "frozen": false,
+          "createdAt": "2026-03-10T14:54:34.916Z",
+          "updatedAt": "2026-03-10T14:54:34.916Z"
+        },
+        "evm_address": "0x006aE819...",
+        "solana_address": "JBxX4ssBYh..."
+      },
+      "error": null
+    },
+    {
+      "name": "Balances",
+      "category": "wallet",
+      "status": "pass",
+      "duration_ms": 613,
+      "data": {
+        "raw": "{'username': 'irvaaanfauzi', 'displayName': 'irvaaanfauzi', 'moltbookUsername': None, 'evmWallets': [{'address': '0x006aE819C09D60b30d6c123a9910Ddfe5ec3fE7C', 'walletId': 'cd26d8c3-ad7a-4d91-8216-e9ce88337737', 'privyWalletId': 'vhbabfnpmsjrta6mrjix0eyz', 'balances': [{'chain': 'bsc', 'asset': 'bnb'"
+      },
+      "error": null
+    },
+    {
+      "name": "Activity Feed",
+      "category": "wallet",
+      "status": "pass",
+      "duration_ms": 259,
+      "data": {
+        "event_count": "?"
+      },
+      "error": null
+    },
+    {
+      "name": "Stats & Rank",
+      "category": "wallet",
+      "status": "pass",
+      "duration_ms": 318,
+      "data": {
+        "rank": 5,
+        "tier": null,
+        "airdrop_points": null,
+        "weekly_txs": null
+      },
+      "error": null
+    },
+    {
+      "name": "Referrals",
+      "category": "referrals",
+      "status": "pass",
+      "duration_ms": 274,
+      "data": {
+        "referral_count": 0,
+        "referral_link": "https://frames.ag/connect?ref=irvaaanfauzi"
+      },
+      "error": null
+    },
+    {
+      "name": "Policy GET",
+      "category": "policy",
+      "status": "pass",
+      "duration_ms": 266,
+      "data": {
+        "max_per_tx_usd": null,
+        "allow_chains": []
+      },
+      "error": null
+    },
+    {
+      "name": "Policy PATCH",
+      "category": "policy",
+      "status": "fail",
+      "duration_ms": 252,
+      "data": null,
+      "error": "405 Client Error: Method Not Allowed for url: https://frames.ag/api/wallets/irvaaanfauzi/policy"
+    },
+    {
+      "name": "List Wallets",
+      "category": "wallet",
+      "status": "pass",
+      "duration_ms": 305,
+      "data": {
+        "wallet_count": 2,
+        "tier": "bronze",
+        "limits": {
+          "ethereum": 1,
+          "solana": 1
+        }
+      },
+      "error": null
+    },
+    {
+      "name": "x402 Dry Run",
+      "category": "x402",
+      "status": "pass",
+      "duration_ms": 1368,
+      "data": {
+        "dry_run": true,
+        "payment_required": true,
+        "chain": "eip155:8453",
+        "amount": "0.01 USDC",
+        "policy_allowed": true
+      },
+      "error": null
+    },
+    {
+      "name": "Sign Message",
+      "category": "actions",
+      "status": "pass",
+      "duration_ms": 774,
+      "data": {
+        "signed": true
+      },
+      "error": null
+    },
+    {
+      "name": "Feedback Submit",
+      "category": "feedback",
+      "status": "pass",
+      "duration_ms": 270,
+      "data": {
+        "submitted": true,
+        "feedback_id": "bc341653-94a3-4feb-9f7f-036e01537cae"
+      },
+      "error": null
+    }
+  ],
+  "meta": {
+    "skill_version": "0.1.12",
+    "balance_usd": null,
+    "rank": 5,
+    "tier": null,
+    "referral_count": 0,
+    "airdrop_points": null
+  }
+}
