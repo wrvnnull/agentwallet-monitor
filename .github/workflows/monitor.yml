@@ -14,9 +14,7 @@ jobs:
   monitor:
     name: Run Feature Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 4
-    outputs:
-      commit_sha: ${{ steps.commit.outputs.sha }}
+    timeout-minutes: 6      # bumped: 30s-timeout network tests need room
 
     steps:
       - name: Checkout
@@ -41,8 +39,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: python scripts/monitor.py
 
-      - name: Commit & push status results
-        id: commit
+      - name: Commit & push results
         if: always()
         run: |
           git config user.name  "github-actions[bot]"
@@ -51,16 +48,23 @@ jobs:
           git add docs/status.json docs/history.json
           if git diff --cached --quiet; then
             echo "No changes to commit"
-            echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           else
             git commit -m "📊 monitor: $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
             git push origin HEAD
-            echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           fi
+
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitor-${{ github.run_number }}
+          path: docs/status.json
+          if-no-files-found: warn
+          retention-days: 7
 
   deploy-pages:
     name: Deploy GitHub Pages
-    needs: monitor      # waits for monitor to finish + commit
+    needs: monitor          # always waits for monitor + commit
     if: always()
     runs-on: ubuntu-latest
     environment:
@@ -68,8 +72,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      # Checkout AFTER monitor has committed — gets fresh status.json
-      - name: Checkout latest (post-monitor)
+      - name: Checkout latest (post-monitor commit)
         uses: actions/checkout@v4
         with:
           ref: main
