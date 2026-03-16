@@ -1,34 +1,28 @@
 #!/usr/bin/env python3
 """
-AgentWallet FINAL Monitor — v4 ULTIMATE
-=========================================
-Semua fitur dari spec resmi:
-  META       : skill.json version, metadata, heartbeat.md
-  PUBLIC     : network pulse, wallet connected, connect-start endpoint
-  WALLET     : info, balances, activity (auth+public), stats, list wallets,
-               create wallet EVM+Solana
-  REFERRALS  : count, tier multiplier, link
-  POLICY     : GET, PATCH/PUT
-  X402       : dryRun auto/EVM/Solana, token USDC/USDT/CASH,
-               preferredChainId, idempotencyKey, timeout option,
-               EVM+USDC, Solana+USDC, INVALID_URL error,
-               legacy /pay endpoint, REAL fetch (actual TX untuk points!)
-  ACTIONS    : sign Ethereum, sign Solana, sign with walletAddress param,
-               faucet Solana devnet
-  NETWORKS   : transfer Base/Optimism/Polygon/Arbitrum/BNB/Ethereum/Gnosis
-               + Sepolia/BaseSepolia testnet
-               + Solana mainnet/devnet
-               + ContractCall EVM/Solana
-               + transfer with idempotencyKey
-  FEEDBACK   : 4 categories (other/bug/feature/stuck)
+AgentWallet FINAL Monitor — v5 ALL REGISTRY
+============================================
+Semua 10 service dari registry.frames.ag + semua fitur AgentWallet.
 
-Scoring rules:
-  PASS  = 2xx or expected 4xx (policy/funds/validation)
-  WARN  = rate-limit, tier-limit, server-side 500, timeout (soft)
-  FAIL  = truly unexpected error (exit 1)
+Harga per-call (USDC, 6 decimals):
+  test/echo        = $0.001  (Base Sepolia testnet)
+  coingecko        = $0.003
+  ai-gen/schnell   = $0.004
+  exa              = $0.010
+  twitter          = $0.010
+  near-intents     = $0.010
+  jupiter          = $0.010
+  agentmail        = $2.000  ← per-day idempotency
+  wordspace        = $2.000  ← per-day idempotency
+  openrouter       = varies  ← per-hour
+
+Idempotency strategy:
+  per-run   = setiap 5 menit (test testnet, super murah)
+  per-hour  = 1x/jam  (murah-menengah)
+  per-day   = 1x/hari (mahal $2)
 """
 
-import os, json, time, datetime, sys, uuid
+import os, json, time, datetime, sys
 
 try:
     import requests
@@ -36,7 +30,8 @@ except ImportError:
     os.system(f"{sys.executable} -m pip install requests -q")
     import requests
 
-BASE_URL = "https://frames.ag/api"
+BASE_URL  = "https://frames.ag/api"
+REG_URL   = "https://registry.frames.ag/api/service"
 USERNAME  = os.environ.get("AGENTWALLET_USERNAME", "")
 API_TOKEN = os.environ.get("AGENTWALLET_API_TOKEN", "")
 
@@ -46,11 +41,16 @@ if not USERNAME or not API_TOKEN:
 
 AUTH = {"Authorization": f"Bearer {API_TOKEN}", "Content-Type": "application/json"}
 
+NOW       = datetime.datetime.utcnow()
+KEY_RUN   = NOW.strftime("%Y%m%d-%H%M")   # per-run  (~every 5 min)
+KEY_HOUR  = NOW.strftime("%Y%m%d-%H")     # per-hour
+KEY_DAY   = NOW.strftime("%Y%m%d")        # per-day
+
 results = {
-    "timestamp": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-    "username": USERNAME,
-    "summary": {"total": 0, "passed": 0, "failed": 0, "warnings": 0},
-    "tests": [],
+    "timestamp": NOW.strftime("%Y-%m-%dT%H:%M:%SZ"),
+    "username":  USERNAME,
+    "summary":   {"total": 0, "passed": 0, "failed": 0, "warnings": 0},
+    "tests":     [],
     "meta": {
         "skill_version": None, "balance_usd": None, "rank": None,
         "tier": None, "referral_count": None, "airdrop_points": None,
@@ -67,15 +67,15 @@ def run_test(name, category, fn):
     try:
         data = fn()
         entry["status"] = "pass"
-        entry["data"] = data
+        entry["data"]   = data
         print(f"  OK   {name}")
     except AssertionError as e:
         entry["status"] = "warn"
-        entry["error"] = str(e)
+        entry["error"]  = str(e)
         print(f"  WARN {name}: {e}")
     except Exception as e:
         entry["status"] = "fail"
-        entry["error"] = str(e)
+        entry["error"]  = str(e)
         print(f"  FAIL {name}: {e}")
     finally:
         entry["duration_ms"] = round((time.time() - start) * 1000)
@@ -84,13 +84,12 @@ def run_test(name, category, fn):
 
 def _safe(r):
     if r.status_code == 429:
-        raise AssertionError("429 rate-limited (too many requests) — wait for next run")
+        raise AssertionError("429 rate-limited — wait for next run")
     r.raise_for_status()
     return r.json()
 
 
 def _network_check(r, label):
-    """4xx = endpoint alive = PASS. 429/500 = server-side = WARN. 5xx = FAIL."""
     if r.status_code in (429, 500):
         code = "429 rate-limit" if r.status_code == 429 else "500 server error"
         raise AssertionError(f"{label} returned {code} (server-side issue)")
@@ -101,31 +100,81 @@ def _network_check(r, label):
     return {"status_code": r.status_code}
 
 
+def _x402_fetch(url, method="POST", body=None, ikey=None, chain="evm",
+                token="USDC", dry=False, timeout_ms=30000):
+    """Generic x402/fetch wrapper used by all registry service calls."""
+    time.sleep(2)
+    payload = {
+        "url": url, "method": method,
+        "preferredChain": chain, "preferredToken": token,
+        "timeout": timeout_ms,
+    }
+    if body:
+        payload["body"] = body
+    if ikey:
+        payload["idempotencyKey"] = ikey
+    if dry:
+        payload["dryRun"] = True
+
+    try:
+        r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
+                          headers=AUTH, json=payload, timeout=90)
+    except requests.exceptions.Timeout:
+        raise AssertionError("x402/fetch timed out (90s)")
+
+    if r.status_code in (429, 502, 503, 504):
+        raise AssertionError(f"x402/fetch server error {r.status_code} — retry next run")
+    if r.status_code == 429:
+        raise AssertionError("Rate limited — retry next run")
+
+    r.raise_for_status()
+    d = r.json()
+
+    if dry:
+        p = d.get("payment", {})
+        return {"dry_run": True, "required": p.get("required"),
+                "chain": p.get("chain"), "amount": p.get("amountFormatted")}
+
+    paid    = d.get("paid", False) or d.get("success", False)
+    payment = d.get("payment", {})
+    resp    = d.get("response", {})
+
+    if not paid and not dry:
+        err = d.get("error","") or d.get("code","")
+        if err:
+            raise AssertionError(f"Fetch failed: {err}")
+
+    return {
+        "paid":    paid,
+        "amount":  payment.get("amountFormatted","free"),
+        "chain":   payment.get("chain"),
+        "status":  payment.get("status","unknown"),
+        "resp_status": resp.get("status"),
+        "ikey":    ikey,
+    }
+
+
 # ─────────────────────────────────────────────────────────────
 # META
 # ─────────────────────────────────────────────────────────────
 
 def test_skill_version():
     d = _safe(requests.get("https://frames.ag/skill.json", timeout=15))
-    v = d.get("version", "unknown")
+    v = d.get("version","unknown")
     results["meta"]["skill_version"] = v
-    return {"version": v, "name": d.get("name"), "homepage": d.get("homepage")}
+    return {"version": v}
 
 def test_skill_json_metadata():
     d = _safe(requests.get("https://frames.ag/skill.json", timeout=15))
     mb = d.get("moltbot", {})
-    x4 = d.get("metadata", {}).get("x402", d.get("x402", {}))
     assert mb.get("api_base"), "moltbot.api_base missing"
-    return {"api_base": mb.get("api_base"), "x402_chains": x4.get("chains", []),
-            "x402_tokens": x4.get("tokens", []), "keywords": d.get("keywords", [])[:5]}
+    return {"api_base": mb.get("api_base"), "keywords": d.get("keywords",[])[:4]}
 
 def test_heartbeat_md():
     r = requests.get("https://frames.ag/heartbeat.md", timeout=15)
     r.raise_for_status()
-    assert len(r.text) > 100, "HEARTBEAT.md too short"
-    # Check key sections exist
-    has_network = "Network Pulse" in r.text or "network" in r.text.lower()
-    return {"bytes": len(r.text), "status": r.status_code, "has_network_section": has_network}
+    assert len(r.text) > 100
+    return {"bytes": len(r.text)}
 
 
 # ─────────────────────────────────────────────────────────────
@@ -134,29 +183,346 @@ def test_heartbeat_md():
 
 def test_network_pulse():
     d = _safe(requests.get(f"{BASE_URL}/network/pulse", timeout=15))
-    return {"active_agents": d.get("activeAgents"), "tx_count": d.get("transactionCount"),
-            "volume": d.get("volume"), "trending": d.get("trendingApis", [])[:3]}
+    return {"active_agents": d.get("activeAgents"),
+            "tx_count": d.get("transactionCount"), "volume": d.get("volume")}
 
 def test_wallet_connected_public():
     d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}", timeout=15))
     assert d.get("connected"), "Wallet not connected"
-    results["meta"]["evm_address"]    = d.get("evmAddress", "")
-    results["meta"]["solana_address"] = d.get("solanaAddress", "")
-    return {"connected": True, "evm": str(d.get("evmAddress",""))[:14]+"...",
-            "solana": str(d.get("solanaAddress",""))[:14]+"..."}
+    results["meta"]["evm_address"]    = d.get("evmAddress","")
+    results["meta"]["solana_address"] = d.get("solanaAddress","")
+    return {"connected": True, "evm": str(d.get("evmAddress",""))[:14]+"..."}
 
 def test_connect_start_endpoint():
-    """
-    Verify /api/connect/start is reachable.
-    We send a dummy email — expect 400/422 (validation error, not 500).
-    This confirms the connect flow endpoint is alive.
-    """
     r = requests.post(f"{BASE_URL}/connect/start",
                       json={"email": "monitor-test@example.invalid"}, timeout=15)
-    # 400/422/429 = endpoint alive (email rejected or rate-limited)
-    assert r.status_code != 500, f"Connect start returned 500"
-    assert r.status_code not in (404, 405), f"Connect start endpoint not found: {r.status_code}"
+    assert r.status_code not in (404, 405, 500), f"Connect start broken: {r.status_code}"
     return {"status_code": r.status_code, "endpoint": "alive"}
+
+
+# ─────────────────────────────────────────────────────────────
+# REGISTRY — Service Health Checks (free, no payment)
+# ─────────────────────────────────────────────────────────────
+
+def _registry_health(slug):
+    d = _safe(requests.get(f"{REG_URL}/{slug}/health", timeout=15))
+    assert d.get("status") == "healthy", f"{slug} not healthy: {d}"
+    return {"status": d.get("status"), "ts": d.get("timestamp","")}
+
+def test_registry_twitter_health():   return _registry_health("twitter")
+def test_registry_ai_gen_health():    return _registry_health("ai-gen")
+def test_registry_test_health():      return _registry_health("test")
+def test_registry_exa_health():       return _registry_health("exa")
+def test_registry_wordspace_health(): return _registry_health("wordspace")
+def test_registry_openrouter_health():return _registry_health("openrouter")
+def test_registry_jupiter_health():   return _registry_health("jupiter")
+def test_registry_near_health():      return _registry_health("near-intents")
+def test_registry_agentmail_health(): return _registry_health("agentmail")
+def test_registry_coingecko_health(): return _registry_health("coingecko")
+
+def test_registry_services_list():
+    """Verify all 10 services are in the registry."""
+    d = _safe(requests.get("https://registry.frames.ag/api/services", timeout=15))
+    services = d.get("services", [])
+    slugs    = [s.get("slug") for s in services]
+    expected = ["twitter","ai-gen","test","exa","wordspace",
+                "openrouter","jupiter","near-intents","agentmail","coingecko"]
+    missing  = [s for s in expected if s not in slugs]
+    assert not missing, f"Missing services: {missing}"
+    return {"count": len(services), "slugs": slugs}
+
+
+# ─────────────────────────────────────────────────────────────
+# REGISTRY — Paid calls via x402/fetch
+# ─────────────────────────────────────────────────────────────
+
+# ── TEST service ($0.001 each — testnet Base Sepolia — use per-run) ──────────
+
+def test_registry_test_echo():
+    """$0.001 — testnet USDC, very cheap, run every time."""
+    return _x402_fetch(
+        url=f"{REG_URL}/test/api/echo",
+        method="POST",
+        body={"data": f"monitor-ping-{KEY_RUN}"},
+        ikey=f"test-echo-{KEY_RUN}",
+        chain="evm", token="USDC",
+    )
+
+def test_registry_test_networks():
+    """$0.001 — test service /api/networks endpoint."""
+    return _x402_fetch(
+        url=f"{REG_URL}/test/api/networks",
+        method="GET",
+        ikey=f"test-networks-{KEY_RUN}",
+        chain="evm", token="USDC",
+    )
+
+
+# ── COINGECKO ($0.003/call — per-hour) ───────────────────────────────────────
+
+def test_registry_coingecko_price():
+    """$0.003 — get BTC price."""
+    return _x402_fetch(
+        url=f"{REG_URL}/coingecko/api/price",
+        method="POST",
+        body={"ids": ["bitcoin","ethereum","solana"], "vs_currencies": ["usd"]},
+        ikey=f"cg-price-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+def test_registry_coingecko_trending():
+    """$0.003 — trending tokens."""
+    return _x402_fetch(
+        url=f"{REG_URL}/coingecko/api/trending",
+        method="GET",
+        ikey=f"cg-trending-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+def test_registry_coingecko_search():
+    """$0.003 — search tokens."""
+    return _x402_fetch(
+        url=f"{REG_URL}/coingecko/api/search",
+        method="POST",
+        body={"query": "solana"},
+        ikey=f"cg-search-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+def test_registry_coingecko_markets():
+    """$0.003 — market data."""
+    return _x402_fetch(
+        url=f"{REG_URL}/coingecko/api/markets",
+        method="POST",
+        body={"vs_currency": "usd", "per_page": 5},
+        ikey=f"cg-markets-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+
+# ── EXA ($0.01/call — per-hour) ──────────────────────────────────────────────
+
+def test_registry_exa_search():
+    """$0.01 — semantic search."""
+    return _x402_fetch(
+        url=f"{REG_URL}/exa/api/search",
+        method="POST",
+        body={"query": f"AgentWallet x402 {KEY_HOUR}", "numResults": 2},
+        ikey=f"exa-search-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+def test_registry_exa_answer():
+    """$0.01 — exa answer endpoint."""
+    return _x402_fetch(
+        url=f"{REG_URL}/exa/api/answer",
+        method="POST",
+        body={"query": "What is x402 payment protocol?"},
+        ikey=f"exa-answer-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+def test_registry_exa_find_similar():
+    """$0.01 — find similar pages."""
+    return _x402_fetch(
+        url=f"{REG_URL}/exa/api/find-similar",
+        method="POST",
+        body={"url": "https://frames.ag", "numResults": 2},
+        ikey=f"exa-similar-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+
+# ── TWITTER ($0.01/call — per-hour) ──────────────────────────────────────────
+
+def test_registry_twitter_search_tweets():
+    """$0.01 — search tweets."""
+    return _x402_fetch(
+        url=f"{REG_URL}/twitter/api/search-tweets",
+        method="POST",
+        body={"query": "AgentWallet x402", "queryType": "Latest"},
+        ikey=f"tw-search-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+def test_registry_twitter_trends():
+    """$0.01 — trending topics."""
+    return _x402_fetch(
+        url=f"{REG_URL}/twitter/api/trends",
+        method="POST",
+        body={},
+        ikey=f"tw-trends-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+def test_registry_twitter_user_info():
+    """$0.01 — user info."""
+    return _x402_fetch(
+        url=f"{REG_URL}/twitter/api/user-info",
+        method="POST",
+        body={"userName": "frames_ag"},
+        ikey=f"tw-userinfo-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+
+# ── NEAR INTENTS ($0.01/call — per-hour) ─────────────────────────────────────
+
+def test_registry_near_intents_tokens():
+    """$0.01 — list supported tokens."""
+    return _x402_fetch(
+        url=f"{REG_URL}/near-intents/api/tokens",
+        method="GET",
+        ikey=f"near-tokens-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+def test_registry_near_intents_quote():
+    """$0.01 — cross-chain swap quote."""
+    return _x402_fetch(
+        url=f"{REG_URL}/near-intents/api/quote",
+        method="POST",
+        body={"tokenIn": "USDC", "tokenOut": "SOL", "amountIn": "1"},
+        ikey=f"near-quote-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+
+# ── JUPITER ($0.01/call — per-hour) ──────────────────────────────────────────
+
+def test_registry_jupiter_price():
+    """$0.01 — Solana token prices via Jupiter."""
+    return _x402_fetch(
+        url=f"{REG_URL}/jupiter/api/price",
+        method="POST",
+        body={"ids": ["SOL", "USDC", "JUP"]},
+        ikey=f"jup-price-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+def test_registry_jupiter_tokens():
+    """$0.01 — list Jupiter tokens."""
+    return _x402_fetch(
+        url=f"{REG_URL}/jupiter/api/tokens",
+        method="GET",
+        ikey=f"jup-tokens-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+
+# ── AI-GEN ($0.004/image — cheapest model flux/schnell — per-hour) ───────────
+
+def test_registry_ai_gen_models():
+    """Free — list available models (no payment needed)."""
+    d = _safe(requests.get(f"{REG_URL}/ai-gen/api/models", timeout=15))
+    models = d.get("models", [])
+    cheapest = min(models, key=lambda m: m.get("pricing",{}).get("price", 999))
+    return {
+        "model_count": len(models),
+        "cheapest": cheapest.get("name"),
+        "cheapest_price": cheapest.get("pricing",{}).get("priceString"),
+    }
+
+def test_registry_ai_gen_image():
+    """$0.004 — generate image with flux/schnell (cheapest model)."""
+    return _x402_fetch(
+        url=f"{REG_URL}/ai-gen/api/invoke",
+        method="POST",
+        body={
+            "owner": "flux", "name": "schnell",
+            "input": {
+                "prompt": f"Abstract digital art, geometric shapes, {KEY_HOUR}",
+                "aspect_ratio": "1:1",
+            }
+        },
+        ikey=f"aigen-{KEY_HOUR}",
+        chain="evm", token="USDC",
+        timeout_ms=60000,
+    )
+
+
+# ── OPENROUTER (varies — per-hour) ───────────────────────────────────────────
+
+def test_registry_openrouter_chat():
+    """~$0.001 — gpt-4o-mini via OpenRouter. Auth: Bearer username:token."""
+    time.sleep(2)
+    # OpenRouter needs special auth header: Bearer username:token
+    or_headers = {
+        "Authorization": f"Bearer {USERNAME}:{API_TOKEN}",
+        "Content-Type":  "application/json",
+    }
+    ikey = f"or-chat-{KEY_HOUR}"
+    payload = {
+        "url": f"{REG_URL}/openrouter/v1/chat/completions",
+        "method": "POST",
+        "body": {
+            "model":    "openai/gpt-4o-mini",
+            "messages": [{"role": "user", "content": f"Reply with one word: monitor-{KEY_HOUR}"}],
+            "max_tokens": 10,
+        },
+        "preferredChain":  "evm",
+        "preferredToken":  "USDC",
+        "idempotencyKey":  ikey,
+        "timeout":         30000,
+    }
+    try:
+        r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
+                          headers=AUTH, json=payload, timeout=60)
+    except requests.exceptions.Timeout:
+        raise AssertionError("OpenRouter timed out")
+    if r.status_code in (429, 502, 503, 504):
+        raise AssertionError(f"OpenRouter server error {r.status_code}")
+    r.raise_for_status()
+    d = r.json()
+    resp = d.get("response", {}).get("body", {})
+    choice = resp.get("choices", [{}])[0].get("message", {}).get("content","") if resp else ""
+    return {
+        "paid":   d.get("paid"),
+        "amount": d.get("payment",{}).get("amountFormatted","?"),
+        "reply":  str(choice)[:50],
+        "ikey":   ikey,
+    }
+
+
+# ── AGENTMAIL ($2.00/call — per-day) ─────────────────────────────────────────
+
+def test_registry_agentmail_inbox_create():
+    """$2.00 — create agent inbox. Per-day idempotency to save $."""
+    return _x402_fetch(
+        url=f"{REG_URL}/agentmail/api/inbox/create",
+        method="POST",
+        body={},
+        ikey=f"agentmail-inbox-{KEY_DAY}",
+        chain="evm", token="USDC",
+        timeout_ms=60000,
+    )
+
+def test_registry_agentmail_messages():
+    """$2.00 — list messages. Per-day."""
+    return _x402_fetch(
+        url=f"{REG_URL}/agentmail/api/messages",
+        method="GET",
+        ikey=f"agentmail-msgs-{KEY_DAY}",
+        chain="evm", token="USDC",
+        timeout_ms=60000,
+    )
+
+
+# ── WORDSPACE ($2.00/call — per-day) ─────────────────────────────────────────
+
+def test_registry_wordspace_invoke():
+    """$2.00 — AI agent loop. Per-day idempotency to save $."""
+    return _x402_fetch(
+        url=f"{REG_URL}/wordspace/api/invoke",
+        method="POST",
+        body={
+            "prompt":   f"Write one sentence about AgentWallet x402 payments. Date: {KEY_DAY}",
+            "maxSteps": 1,
+        },
+        ikey=f"wordspace-{KEY_DAY}",
+        chain="evm", token="USDC",
+        timeout_ms=60000,
+    )
 
 
 # ─────────────────────────────────────────────────────────────
@@ -170,11 +536,12 @@ def test_wallet_info():
             "solana": str(d.get("solanaAddress",""))[:14]+"..."}
 
 def test_balances():
-    d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/balances", headers=AUTH, timeout=15))
+    d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/balances",
+                            headers=AUTH, timeout=15))
     inner = d.get("data", d)
     total = inner.get("totalUsd") or inner.get("total_usd")
     results["meta"]["balance_usd"] = total
-    return {"total_usd": total, "raw": str(inner)[:300]}
+    return {"total_usd": total, "raw": str(inner)[:250]}
 
 def test_activity_auth():
     d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/activity?limit=20",
@@ -185,31 +552,29 @@ def test_activity_auth():
     return {"event_count": count, "event_types": types}
 
 def test_activity_public():
-    """Public unauthenticated — limited view."""
     d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/activity?limit=5", timeout=15))
     events = d.get("data", d)
     return {"public_events": len(events) if isinstance(events, list) else "?"}
 
 def test_stats():
-    d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/stats", headers=AUTH, timeout=15))
+    d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/stats",
+                            headers=AUTH, timeout=15))
     inner = d.get("data", d)
     results["meta"]["rank"]           = inner.get("rank")
     results["meta"]["tier"]           = inner.get("tier")
     results["meta"]["airdrop_points"] = inner.get("airdropPoints")
     return {"rank": inner.get("rank"), "tier": inner.get("tier"),
             "points": inner.get("airdropPoints"), "weekly_txs": inner.get("weeklyTransactions"),
-            "streak": inner.get("streak"), "total_txs": inner.get("totalTransactions")}
+            "streak": inner.get("streak")}
 
 def test_list_wallets():
-    d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/wallets", headers=AUTH, timeout=15))
+    d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/wallets",
+                            headers=AUTH, timeout=15))
     inner = d.get("data", d)
     wallets = inner.get("wallets", [])
     results["meta"]["wallet_count"] = len(wallets)
-    # Store wallet addresses for multi-wallet tests
-    results["meta"]["all_evm_wallets"] = [w["address"] for w in wallets
-                                           if w.get("chainType") in ("ethereum","evm")]
     return {"count": len(wallets), "tier": inner.get("tier"),
-            "limits": inner.get("limits"), "counts": inner.get("counts")}
+            "limits": inner.get("limits")}
 
 def test_create_wallet_evm():
     r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/wallets",
@@ -217,7 +582,7 @@ def test_create_wallet_evm():
     if r.status_code == 403:
         raise AssertionError(f"Tier limit (expected Bronze): {r.json().get('error','')}")
     r.raise_for_status()
-    return {"created": True, "address": str(r.json().get("data",{}).get("address",""))[:16]+"..."}
+    return {"created": True}
 
 def test_create_wallet_solana():
     r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/wallets",
@@ -225,7 +590,7 @@ def test_create_wallet_solana():
     if r.status_code == 403:
         raise AssertionError(f"Tier limit (expected Bronze): {r.json().get('error','')}")
     r.raise_for_status()
-    return {"created": True, "address": str(r.json().get("data",{}).get("address",""))[:16]+"..."}
+    return {"created": True}
 
 
 # ─────────────────────────────────────────────────────────────
@@ -233,20 +598,15 @@ def test_create_wallet_solana():
 # ─────────────────────────────────────────────────────────────
 
 def test_referrals():
-    d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/referrals", headers=AUTH, timeout=15))
+    d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/referrals",
+                            headers=AUTH, timeout=15))
     inner = d.get("data", d)
     count = inner.get("referralCount") or inner.get("count") or 0
     results["meta"]["referral_count"] = count
     thresholds = [(100,"3x Diamond"),(25,"2x Gold"),(5,"1.5x Silver"),(0,"1x Bronze")]
     multi = next(m for t,m in thresholds if count >= t)
-    next_tier_map = [(0,"Silver",5),(5,"Gold",25),(25,"Diamond",100),(100,"Diamond",None)]
-    next_info = next(((nt, nr) for t,nt,nr in next_tier_map if count >= t and nr), (None,None))
-    return {
-        "referral_count": count, "multiplier": multi,
-        "link": f"https://frames.ag/connect?ref={USERNAME}",
-        "next_tier": next_info[0],
-        "need_for_next": None if next_info[1] is None else next_info[1] - count,
-    }
+    return {"referral_count": count, "multiplier": multi,
+            "link": f"https://frames.ag/connect?ref={USERNAME}"}
 
 
 # ─────────────────────────────────────────────────────────────
@@ -254,15 +614,13 @@ def test_referrals():
 # ─────────────────────────────────────────────────────────────
 
 def test_policy_get():
-    d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/policy", headers=AUTH, timeout=15))
+    d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/policy",
+                            headers=AUTH, timeout=15))
     inner = d.get("data", d)
     return {"max_per_tx_usd": inner.get("max_per_tx_usd"),
-            "allow_chains": inner.get("allow_chains", []),
-            "allow_contracts": inner.get("allow_contracts", []),
-            "rate_limit": inner.get("rate_limit")}
+            "allow_chains": inner.get("allow_chains", [])}
 
 def test_policy_patch():
-    """PATCH → PUT fallback. 400/405 = WARN (API restriction)."""
     payload = {"max_per_tx_usd": "25", "allow_chains": ["base", "solana"]}
     url = f"{BASE_URL}/wallets/{USERNAME}/policy"
     r = requests.patch(url, headers=AUTH, json=payload, timeout=15)
@@ -270,201 +628,114 @@ def test_policy_patch():
         r = requests.put(url, headers=AUTH, json=payload, timeout=15)
     if r.status_code in (400, 405):
         d = r.json() if r.headers.get("content-type","").startswith("application/json") else {}
-        raise AssertionError(f"Policy write {r.status_code} — {d.get('error','API restriction')}")
+        raise AssertionError(f"Policy write {r.status_code} — {d.get('error','')}")
     r.raise_for_status()
-    assert r.json().get("success"), f"Policy update failed: {r.json().get('error')}"
-    return {"updated": True, "method": r.request.method}
+    assert r.json().get("success"), f"Policy update failed"
+    return {"updated": True}
 
 
 # ─────────────────────────────────────────────────────────────
-# X402 / fetch
+# X402 dryRun — all options
 # ─────────────────────────────────────────────────────────────
 
-X402_TARGET = "https://registry.frames.ag/api/service/exa/api/search"
-X402_BODY   = {"query": "AI agent payments x402", "numResults": 1}
-
-def _x402_dry(extra=None):
-    time.sleep(2)  # avoid 429 on rapid sequential x402 calls
-    payload = {"url": X402_TARGET, "method": "POST", "body": X402_BODY, "dryRun": True}
+def _x402_dry_generic(extra=None):
+    time.sleep(2)
+    payload = {"url": f"{REG_URL}/exa/api/search", "method": "POST",
+               "body": {"query": "test"}, "dryRun": True}
     if extra:
         payload.update(extra)
     d = _safe(requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
                             headers=AUTH, json=payload, timeout=30))
     p = d.get("payment", {})
-    return {"dry_run": True, "required": p.get("required"),
-            "chain": p.get("chain"), "amount": p.get("amountFormatted"),
-            "policy_ok": p.get("policyAllowed")}
+    return {"required": p.get("required"), "chain": p.get("chain"),
+            "amount": p.get("amountFormatted")}
 
-# All chain/token combos (dryRun — zero cost)
-def test_x402_auto():            return _x402_dry({"preferredChain": "auto"})
-def test_x402_evm():             return _x402_dry({"preferredChain": "evm"})
-def test_x402_solana():          return _x402_dry({"preferredChain": "solana"})
-def test_x402_usdc():            return _x402_dry({"preferredToken": "USDC"})
-def test_x402_usdt():            return _x402_dry({"preferredToken": "USDT"})
-def test_x402_cash():            return _x402_dry({"preferredToken": "CASH"})
-def test_x402_evm_usdc():        return _x402_dry({"preferredChain": "evm",    "preferredToken": "USDC"})
-def test_x402_evm_usdt():        return _x402_dry({"preferredChain": "evm",    "preferredToken": "USDT"})
-def test_x402_solana_usdc():     return _x402_dry({"preferredChain": "solana", "preferredToken": "USDC"})
-def test_x402_solana_cash():     return _x402_dry({"preferredChain": "solana", "preferredToken": "CASH"})
-def test_x402_timeout_opt():     return _x402_dry({"timeout": 15000})
-
-def test_x402_preferred_chain_id():
-    """Test preferredChainId field (Base = 8453)."""
-    return _x402_dry({"preferredChainId": 8453})
-
-def test_x402_idempotency_key():
-    """Test idempotencyKey field — same key should be safe to replay."""
-    ikey = f"monitor-dry-{datetime.date.today().isoformat()}"
-    return _x402_dry({"idempotencyKey": ikey})
+def test_x402_dry_auto():         return _x402_dry_generic({"preferredChain":"auto"})
+def test_x402_dry_evm():          return _x402_dry_generic({"preferredChain":"evm"})
+def test_x402_dry_solana():       return _x402_dry_generic({"preferredChain":"solana"})
+def test_x402_dry_usdc():         return _x402_dry_generic({"preferredToken":"USDC"})
+def test_x402_dry_usdt():         return _x402_dry_generic({"preferredToken":"USDT"})
+def test_x402_dry_cash():         return _x402_dry_generic({"preferredToken":"CASH"})
+def test_x402_dry_chain_id():     return _x402_dry_generic({"preferredChainId":8453})
+def test_x402_dry_idem_key():     return _x402_dry_generic({"idempotencyKey":f"dry-{KEY_HOUR}"})
+def test_x402_dry_timeout():      return _x402_dry_generic({"timeout":15000})
+def test_x402_dry_evm_usdc():     return _x402_dry_generic({"preferredChain":"evm","preferredToken":"USDC"})
+def test_x402_dry_solana_usdc():  return _x402_dry_generic({"preferredChain":"solana","preferredToken":"USDC"})
+def test_x402_dry_solana_cash():  return _x402_dry_generic({"preferredChain":"solana","preferredToken":"CASH"})
 
 def test_x402_invalid_url():
-    """INVALID_URL error code — localhost should be blocked."""
     r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
-                      headers=AUTH, json={"url": "http://localhost/secret", "dryRun": True},
+                      headers=AUTH, json={"url":"http://localhost/bad","dryRun":True},
                       timeout=15)
     assert r.status_code in (400, 422), f"Expected 400/422, got {r.status_code}"
-    return {"error": r.json().get("error",""), "code": r.json().get("code",""),
-            "status": r.status_code}
+    return {"error": r.json().get("error",""), "status": r.status_code}
 
-def test_x402_legacy_pay_endpoint():
-    """Legacy /x402/pay — verify endpoint exists (not 404/500)."""
+def test_x402_legacy_pay():
     r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/pay",
                       headers=AUTH,
-                      json={"requirement": "eyJ0eXBlIjoieC00MDIifQ==",
-                            "preferredChain": "evm", "dryRun": True},
+                      json={"requirement":"eyJ0eXBlIjoieC00MDIifQ==",
+                            "preferredChain":"evm","dryRun":True},
                       timeout=20)
-    assert r.status_code != 500, "Legacy /pay returned 500"
-    assert r.status_code not in (404, 405), f"Legacy /pay not found: {r.status_code}"
-    d = r.json() if r.headers.get("content-type","").startswith("application/json") else {}
-    return {"status_code": r.status_code, "endpoint": "alive", "preview": str(d)[:100]}
-
-def test_x402_real_fetch():
-    """
-    REAL x402 fetch — actually pays & calls Exa search API.
-    Generates a real TX → earns daily active points + weekly streak.
-    No pre-flight balance check (balance API format varies).
-    Uses per-minute idempotencyKey so retries don't double-charge.
-    insufficient_funds error → WARN (not FAIL).
-    """
-    minute_key = datetime.datetime.utcnow().strftime("%Y%m%d-%H%M")
-    ikey = f"monitor-real-{minute_key}"
-
-    payload = {
-        "url": X402_TARGET,
-        "method": "POST",
-        "body": {"query": f"AgentWallet monitor {minute_key}", "numResults": 1},
-        "preferredChain": "evm",
-        "preferredToken": "USDC",
-        "idempotencyKey": ikey,
-        "timeout": 30000,
-    }
-
-    try:
-        r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
-                          headers=AUTH, json=payload, timeout=60)
-    except requests.exceptions.Timeout:
-        raise AssertionError("Real fetch timed out (60s) — server busy, retry next run")
-
-    # Soft errors → WARN
-    if r.status_code in (402, 403):
-        d = r.json()
-        raise AssertionError(f"Payment blocked ({r.status_code}): {d.get('error','') or d.get('code','')}")
-    if r.status_code in (429, 502, 503, 504):
-        raise AssertionError(f"Real fetch server error {r.status_code} — retry next run")
-
-    r.raise_for_status()
-    d = r.json()
-
-    # Check if it actually paid
-    paid = d.get("paid", False) or d.get("success", False)
-    if not paid:
-        err = d.get("error","") or d.get("code","")
-        raise AssertionError(f"Real fetch returned success=false: {err}")
-
-    results["meta"]["real_x402_done"]   = True
-    results["meta"]["real_x402_amount"] = d.get("payment", {}).get("amountFormatted")
-    results["meta"]["real_x402_chain"]  = d.get("payment", {}).get("chain")
-
-    resp = d.get("response", {})
-    return {
-        "paid": True,
-        "amount":          d.get("payment", {}).get("amountFormatted"),
-        "chain":           d.get("payment", {}).get("chain"),
-        "attempts":        d.get("attempts"),
-        "response_status": resp.get("status"),
-        "duration_ms":     d.get("duration"),
-        "idempotency_key": ikey,
-    }
+    assert r.status_code not in (404, 405, 500), f"Legacy /pay broken: {r.status_code}"
+    return {"status_code": r.status_code, "alive": True}
 
 
 # ─────────────────────────────────────────────────────────────
-# ACTIONS — Sign
+# ACTIONS
 # ─────────────────────────────────────────────────────────────
 
 def test_sign_ethereum():
     time.sleep(2)
     d = _safe(requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/sign-message",
                             headers=AUTH,
-                            json={"chain": "ethereum",
-                                  "message": "AgentWallet monitor v4 ETH"},
+                            json={"chain":"ethereum","message":"monitor v5 ETH"},
                             timeout=15))
-    assert d.get("success") or d.get("signature") or d.get("data"), f"No signature: {d}"
+    assert d.get("success") or d.get("signature") or d.get("data")
     return {"chain": "ethereum", "signed": True}
 
 def test_sign_solana():
     time.sleep(2)
     d = _safe(requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/sign-message",
                             headers=AUTH,
-                            json={"chain": "solana",
-                                  "message": "AgentWallet monitor v4 SOL"},
+                            json={"chain":"solana","message":"monitor v5 SOL"},
                             timeout=15))
-    assert d.get("success") or d.get("signature") or d.get("data"), f"No signature: {d}"
+    assert d.get("success") or d.get("signature") or d.get("data")
     return {"chain": "solana", "signed": True}
 
 def test_sign_with_wallet_address():
-    """Sign using explicit walletAddress param (multi-wallet feature)."""
     time.sleep(2)
-    evm_addr = results["meta"]["evm_address"] or ""
-    if not evm_addr:
-        raise AssertionError("No EVM address available (run wallet_info first)")
+    evm = results["meta"]["evm_address"] or ""
+    if not evm:
+        raise AssertionError("No EVM address available")
     d = _safe(requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/sign-message",
                             headers=AUTH,
-                            json={"chain": "ethereum",
-                                  "message": "AgentWallet monitor walletAddress param",
-                                  "walletAddress": evm_addr},
+                            json={"chain":"ethereum","message":"walletAddress param test",
+                                  "walletAddress": evm},
                             timeout=15))
-    assert d.get("success") or d.get("signature") or d.get("data"), f"No signature: {d}"
-    return {"chain": "ethereum", "signed": True, "wallet_address_param": evm_addr[:14]+"..."}
-
-
-# ─────────────────────────────────────────────────────────────
-# ACTIONS — Faucet
-# ─────────────────────────────────────────────────────────────
+    assert d.get("success") or d.get("signature") or d.get("data")
+    return {"signed": True, "walletAddress": evm[:14]+"..."}
 
 def test_faucet_devnet():
     r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/faucet-sol",
                       headers=AUTH, json={}, timeout=30)
     if r.status_code == 429:
-        raise AssertionError("Faucet rate-limited (3/24h) — used today already")
+        raise AssertionError("Faucet rate-limited (3/24h)")
     r.raise_for_status()
     inner = r.json().get("data", r.json())
-    return {"amount": inner.get("amount"), "status": inner.get("status"),
-            "tx": str(inner.get("txHash",""))[:20]+"...", "remaining": inner.get("remaining")}
+    return {"amount": inner.get("amount"), "remaining": inner.get("remaining")}
 
 
 # ─────────────────────────────────────────────────────────────
-# NETWORKS — Transfer validation (endpoint-alive checks)
-# 4xx = policy/funds blocked = PASS (endpoint alive, policy working)
-# 429/500 = server-side = WARN | timeout = WARN | 5xx else = FAIL
+# NETWORKS — Transfer/ContractCall validation
 # ─────────────────────────────────────────────────────────────
 
 EVM_DUMMY    = "0x0000000000000000000000000000000000000001"
 SOLANA_DUMMY = "11111111111111111111111111111111"
 
-def _evm_transfer(chain_id, timeout_s=20, extra=None):
-    time.sleep(1.2)  # avoid 429 rate-limit across sequential network tests
-    to_addr = results["meta"]["evm_address"] or EVM_DUMMY
-    payload = {"to": to_addr, "amount": "1", "asset": "usdc", "chainId": chain_id}
+def _evm_tx(chain_id, timeout_s=20, extra=None):
+    time.sleep(1.2)
+    to = results["meta"]["evm_address"] or EVM_DUMMY
+    payload = {"to": to, "amount": "1", "asset": "usdc", "chainId": chain_id}
     if extra:
         payload.update(extra)
     try:
@@ -474,42 +745,36 @@ def _evm_transfer(chain_id, timeout_s=20, extra=None):
         raise AssertionError(f"Chain {chain_id} timed out ({timeout_s}s)")
     return _network_check(r, f"chainId={chain_id}")
 
-def test_transfer_base():         return _evm_transfer(8453)
-def test_transfer_optimism():     return _evm_transfer(10)
-def test_transfer_polygon():      return _evm_transfer(137)
-def test_transfer_arbitrum():     return _evm_transfer(42161)
-def test_transfer_bnb():          return _evm_transfer(56,  timeout_s=30)
-def test_transfer_ethereum():     return _evm_transfer(1)
-def test_transfer_gnosis():       return _evm_transfer(100)
-def test_transfer_sepolia():      return _evm_transfer(11155111, timeout_s=30)
-def test_transfer_base_sepolia(): return _evm_transfer(84532)
+def test_tx_base():          return _evm_tx(8453)
+def test_tx_optimism():      return _evm_tx(10)
+def test_tx_polygon():       return _evm_tx(137)
+def test_tx_arbitrum():      return _evm_tx(42161)
+def test_tx_bnb():           return _evm_tx(56, timeout_s=30)
+def test_tx_ethereum():      return _evm_tx(1)
+def test_tx_gnosis():        return _evm_tx(100)
+def test_tx_sepolia():       return _evm_tx(11155111, timeout_s=30)
+def test_tx_base_sepolia():  return _evm_tx(84532)
+def test_tx_idempotency():   return _evm_tx(8453, extra={"idempotencyKey": f"idem-{KEY_HOUR}"})
 
-def test_transfer_with_idempotency():
-    """Transfer endpoint with idempotencyKey field."""
-    ikey = f"monitor-idem-{datetime.date.today().isoformat()}"
-    return _evm_transfer(8453, extra={"idempotencyKey": ikey})
-
-def test_transfer_sol_mainnet():
+def test_tx_sol_mainnet():
     time.sleep(1.2)
-    to_addr = results["meta"]["solana_address"] or SOLANA_DUMMY
+    to = results["meta"]["solana_address"] or SOLANA_DUMMY
     try:
         r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/transfer-solana",
                           headers=AUTH,
-                          json={"to": to_addr, "amount": "1", "asset": "usdc",
-                                "network": "mainnet"},
+                          json={"to": to,"amount":"1","asset":"usdc","network":"mainnet"},
                           timeout=20)
     except requests.exceptions.Timeout:
         raise AssertionError("Solana mainnet timed out")
     return _network_check(r, "solana_mainnet")
 
-def test_transfer_sol_devnet():
+def test_tx_sol_devnet():
     time.sleep(1.2)
-    to_addr = results["meta"]["solana_address"] or SOLANA_DUMMY
+    to = results["meta"]["solana_address"] or SOLANA_DUMMY
     try:
         r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/transfer-solana",
                           headers=AUTH,
-                          json={"to": to_addr, "amount": "1", "asset": "sol",
-                                "network": "devnet"},
+                          json={"to": to,"amount":"1","asset":"sol","network":"devnet"},
                           timeout=20)
     except requests.exceptions.Timeout:
         raise AssertionError("Solana devnet timed out")
@@ -520,257 +785,174 @@ def test_contract_call_evm():
     try:
         r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/contract-call",
                           headers=AUTH,
-                          json={"chainType": "ethereum", "to": EVM_DUMMY,
-                                "data": "0x", "value": "0", "chainId": 8453},
+                          json={"chainType":"ethereum","to":EVM_DUMMY,
+                                "data":"0x","value":"0","chainId":8453},
                           timeout=20)
     except requests.exceptions.Timeout:
         raise AssertionError("EVM contract-call timed out")
-    return _network_check(r, "evm_contract_call_base")
+    return _network_check(r, "evm_contract_call")
 
 def test_contract_call_solana():
     time.sleep(1.2)
     try:
         r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/contract-call",
                           headers=AUTH,
-                          json={"chainType": "solana",
-                                "instructions": [{
-                                    "programId": SOLANA_DUMMY,
-                                    "accounts": [{"pubkey": SOLANA_DUMMY,
-                                                  "isSigner": False, "isWritable": False}],
-                                    "data": "AA==",
-                                }],
-                                "network": "devnet"},
+                          json={"chainType":"solana",
+                                "instructions":[{"programId":SOLANA_DUMMY,
+                                   "accounts":[{"pubkey":SOLANA_DUMMY,
+                                                "isSigner":False,"isWritable":False}],
+                                   "data":"AA=="}],
+                                "network":"devnet"},
                           timeout=20)
     except requests.exceptions.Timeout:
         raise AssertionError("Solana contract-call timed out")
-    return _network_check(r, "solana_contract_call_devnet")
+    return _network_check(r, "solana_contract_call")
 
 
 # ─────────────────────────────────────────────────────────────
-# FEEDBACK — all 4 categories
+# FEEDBACK
 # ─────────────────────────────────────────────────────────────
 
 def _feedback(cat, msg):
     d = _safe(requests.post(f"{BASE_URL}/wallets/{USERNAME}/feedback",
                             headers=AUTH,
                             json={"category": cat, "message": msg,
-                                  "context": {
-                                      "automated": True,
-                                      "version": "v4",
-                                      "run_id": os.environ.get("GITHUB_RUN_ID","local"),
-                                      "repo": os.environ.get("GITHUB_REPOSITORY","unknown"),
-                                  }},
+                                  "context": {"automated": True, "version": "v5",
+                                              "run_id": os.environ.get("GITHUB_RUN_ID","local")}},
                             timeout=15))
     assert d.get("success"), f"Feedback failed: {d.get('error')}"
     return {"category": cat, "id": d.get("data",{}).get("id","?")}
 
 def test_feedback_other():
-    ts = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-    real = results["meta"].get("real_x402_done", False)
-    msg = (f"[AUTO-MONITOR v4] Heartbeat {ts}. "
-           f"Real x402 tx: {'YES — ' + str(results['meta'].get('real_x402_amount')) if real else 'skipped (low balance)'}.")
-    return _feedback("other", msg)
+    return _feedback("other",
+        f"[AUTO-MONITOR v5] Heartbeat {NOW.strftime('%Y-%m-%d %H:%M UTC')}. "
+        f"All 10 registry services tested.")
 
 def test_feedback_bug():
-    return _feedback("bug", "[AUTO-MONITOR v4] Automated category test: bug. Monitor ping.")
-
+    return _feedback("bug", "[AUTO-MONITOR v5] Category test: bug.")
 def test_feedback_feature():
-    return _feedback("feature", "[AUTO-MONITOR v4] Automated category test: feature. Monitor ping.")
-
+    return _feedback("feature", "[AUTO-MONITOR v5] Category test: feature.")
 def test_feedback_stuck():
-    return _feedback("stuck", "[AUTO-MONITOR v4] Automated category test: stuck. Monitor ping.")
+    return _feedback("stuck", "[AUTO-MONITOR v5] Category test: stuck.")
 
-
-
-def test_x402_free_endpoint():
-    """
-    Test x402/fetch against a FREE-tier endpoint.
-    STATUS=FREE means no payment charged — x402 protocol still processes it.
-    This is a distinct flow from paid endpoints.
-    """
-    time.sleep(2)
-    # Use a known free registry endpoint
-    payload = {
-        "url": "https://registry.frames.ag/api/service/exa/api/search",
-        "method": "POST",
-        "body": {"query": "free tier test", "numResults": 1},
-        "dryRun": True,  # dryRun to check if it's free without paying
-    }
-    d = _safe(requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
-                            headers=AUTH, json=payload, timeout=30))
-    p = d.get("payment", {})
-    status = p.get("status") or ("free" if not p.get("required") else "paid")
-    return {
-        "status": status,
-        "payment_required": p.get("required"),
-        "amount": p.get("amountFormatted"),
-        "chain": p.get("chain"),
-        "is_free": not p.get("required", True),
-    }
-
-
-def test_x402_real_free_fetch():
-    """
-    REAL fetch against free-tier endpoint — no balance needed.
-    STATUS=FREE in activity = this flow.
-    Earns TX points even when free!
-    """
-    time.sleep(2)
-    minute_key = datetime.datetime.utcnow().strftime("%Y%m%d-%H%M")
-    ikey = f"monitor-free-{minute_key}"
-    payload = {
-        "url": "https://registry.frames.ag/api/service/exa/api/search",
-        "method": "POST",
-        "body": {"query": f"AgentWallet free tier {minute_key}", "numResults": 1},
-        "idempotencyKey": ikey,
-        "timeout": 30000,
-        # No preferredChain/Token — let server decide (may be free)
-    }
-    try:
-        r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
-                          headers=AUTH, json=payload, timeout=60)
-    except requests.exceptions.Timeout:
-        raise AssertionError("Free fetch timed out (60s)")
-
-    if r.status_code in (429, 502, 503, 504):
-        raise AssertionError(f"Free fetch server error {r.status_code} — retry next run")
-    if r.status_code == 429:
-        raise AssertionError("Rate limited — retry next run")
-
-    r.raise_for_status()
-    d = r.json()
-
-    payment = d.get("payment", {})
-    paid    = d.get("paid", False)
-    success = d.get("success", False)
-    status  = payment.get("status", "unknown")
-
-    return {
-        "success":  success,
-        "paid":     paid,
-        "status":   status,          # "free" or "paid"
-        "amount":   payment.get("amountFormatted", "0"),
-        "chain":    payment.get("chain"),
-        "attempts": d.get("attempts"),
-        "ikey":     ikey,
-        "response_status": d.get("response", {}).get("status"),
-    }
-
-
-def test_x402_check_activity_free_events():
-    """
-    Verify recent activity contains PAYMENT FREE events.
-    Confirms free-tier x402 flow is being recorded correctly.
-    """
-    d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/activity?limit=50",
-                           headers=AUTH, timeout=15))
-    events = d.get("data", d) or []
-    if not isinstance(events, list):
-        raise AssertionError("Activity response not a list")
-
-    x402_events = [e for e in events if "x402" in str(e.get("type","")).lower()
-                   or "payment" in str(e.get("type","")).lower()]
-    free_events  = [e for e in events if str(e.get("status","")).lower() == "free"
-                    or str(e.get("paymentStatus","")).lower() == "free"]
-    paid_events  = [e for e in events if str(e.get("status","")).lower() == "paid"
-                    or str(e.get("paymentStatus","")).lower() == "paid"]
-
-    return {
-        "total_events":  len(events),
-        "x402_events":   len(x402_events),
-        "free_payments": len(free_events),
-        "paid_payments": len(paid_events),
-        "event_types":   list({e.get("type","?") for e in events})[:8],
-    }
 
 # ─────────────────────────────────────────────────────────────
-# TEST REGISTRY — ordered by execution
+# TEST REGISTRY
 # ─────────────────────────────────────────────────────────────
 
 TESTS = [
     # META
-    ("Skill Version",                   "meta",      test_skill_version),
-    ("Skill.json Full Metadata",         "meta",      test_skill_json_metadata),
-    ("Heartbeat.md Reachable",           "meta",      test_heartbeat_md),
+    ("Skill Version",                       "meta",      test_skill_version),
+    ("Skill.json Metadata",                 "meta",      test_skill_json_metadata),
+    ("Heartbeat.md",                        "meta",      test_heartbeat_md),
     # PUBLIC
-    ("Network Pulse",                    "public",    test_network_pulse),
-    ("Wallet Connected (public)",        "public",    test_wallet_connected_public),
-    ("Connect Start Endpoint",           "public",    test_connect_start_endpoint),
+    ("Network Pulse",                       "public",    test_network_pulse),
+    ("Wallet Connected (public)",           "public",    test_wallet_connected_public),
+    ("Connect Start Endpoint",              "public",    test_connect_start_endpoint),
+    # REGISTRY — Health (free)
+    ("Registry Services List",             "registry",  test_registry_services_list),
+    ("Registry: twitter health",           "registry",  test_registry_twitter_health),
+    ("Registry: ai-gen health",            "registry",  test_registry_ai_gen_health),
+    ("Registry: test health",              "registry",  test_registry_test_health),
+    ("Registry: exa health",               "registry",  test_registry_exa_health),
+    ("Registry: wordspace health",         "registry",  test_registry_wordspace_health),
+    ("Registry: openrouter health",        "registry",  test_registry_openrouter_health),
+    ("Registry: jupiter health",           "registry",  test_registry_jupiter_health),
+    ("Registry: near-intents health",      "registry",  test_registry_near_health),
+    ("Registry: agentmail health",         "registry",  test_registry_agentmail_health),
+    ("Registry: coingecko health",         "registry",  test_registry_coingecko_health),
+    # REGISTRY — Paid (testnet $0.001/run)
+    ("Registry: test/echo $0.001",         "registry",  test_registry_test_echo),
+    ("Registry: test/networks $0.001",     "registry",  test_registry_test_networks),
+    # REGISTRY — Paid (cheap $0.003/hr)
+    ("Registry: coingecko/price $0.003",   "registry",  test_registry_coingecko_price),
+    ("Registry: coingecko/trending",       "registry",  test_registry_coingecko_trending),
+    ("Registry: coingecko/search",         "registry",  test_registry_coingecko_search),
+    ("Registry: coingecko/markets",        "registry",  test_registry_coingecko_markets),
+    # REGISTRY — Paid ($0.01/hr)
+    ("Registry: exa/search $0.01",         "registry",  test_registry_exa_search),
+    ("Registry: exa/answer $0.01",         "registry",  test_registry_exa_answer),
+    ("Registry: exa/find-similar $0.01",   "registry",  test_registry_exa_find_similar),
+    ("Registry: twitter/search $0.01",     "registry",  test_registry_twitter_search_tweets),
+    ("Registry: twitter/trends $0.01",     "registry",  test_registry_twitter_trends),
+    ("Registry: twitter/user-info $0.01",  "registry",  test_registry_twitter_user_info),
+    ("Registry: near-intents/tokens",      "registry",  test_registry_near_intents_tokens),
+    ("Registry: near-intents/quote",       "registry",  test_registry_near_intents_quote),
+    ("Registry: jupiter/price $0.01",      "registry",  test_registry_jupiter_price),
+    ("Registry: jupiter/tokens $0.01",     "registry",  test_registry_jupiter_tokens),
+    # REGISTRY — AI & LLM
+    ("Registry: ai-gen/models (free)",     "registry",  test_registry_ai_gen_models),
+    ("Registry: ai-gen/schnell $0.004",    "registry",  test_registry_ai_gen_image),
+    ("Registry: openrouter/gpt4o-mini",    "registry",  test_registry_openrouter_chat),
+    # REGISTRY — Expensive ($2.00/day)
+    ("Registry: agentmail/inbox $2.00",    "registry",  test_registry_agentmail_inbox_create),
+    ("Registry: agentmail/messages $2.00", "registry",  test_registry_agentmail_messages),
+    ("Registry: wordspace/invoke $2.00",   "registry",  test_registry_wordspace_invoke),
     # WALLET
-    ("Wallet Info",                      "wallet",    test_wallet_info),
-    ("Balances All Chains",              "wallet",    test_balances),
-    ("Activity Feed (authenticated)",    "wallet",    test_activity_auth),
-    ("Activity Feed (public)",           "wallet",    test_activity_public),
-    ("Stats & Rank",                     "wallet",    test_stats),
-    ("List Wallets",                     "wallet",    test_list_wallets),
-    ("Create Wallet EVM",                "wallet",    test_create_wallet_evm),
-    ("Create Wallet Solana",             "wallet",    test_create_wallet_solana),
+    ("Wallet Info",                         "wallet",    test_wallet_info),
+    ("Balances",                            "wallet",    test_balances),
+    ("Activity (authenticated)",            "wallet",    test_activity_auth),
+    ("Activity (public)",                   "wallet",    test_activity_public),
+    ("Stats & Rank",                        "wallet",    test_stats),
+    ("List Wallets",                        "wallet",    test_list_wallets),
+    ("Create Wallet EVM",                   "wallet",    test_create_wallet_evm),
+    ("Create Wallet Solana",                "wallet",    test_create_wallet_solana),
     # REFERRALS
-    ("Referrals & Tier Progress",        "referrals", test_referrals),
+    ("Referrals & Tier",                    "referrals", test_referrals),
     # POLICY
-    ("Policy GET",                       "policy",    test_policy_get),
-    ("Policy PATCH/PUT",                 "policy",    test_policy_patch),
-    # X402 dryRun — all combos
-    ("x402 DryRun auto-chain",           "x402",      test_x402_auto),
-    ("x402 DryRun EVM",                  "x402",      test_x402_evm),
-    ("x402 DryRun Solana",               "x402",      test_x402_solana),
-    ("x402 DryRun USDC token",           "x402",      test_x402_usdc),
-    ("x402 DryRun USDT token",           "x402",      test_x402_usdt),
-    ("x402 DryRun CASH token",           "x402",      test_x402_cash),
-    ("x402 DryRun EVM+USDC",             "x402",      test_x402_evm_usdc),
-    ("x402 DryRun EVM+USDT",             "x402",      test_x402_evm_usdt),
-    ("x402 DryRun Solana+USDC",          "x402",      test_x402_solana_usdc),
-    ("x402 DryRun Solana+CASH",          "x402",      test_x402_solana_cash),
-    ("x402 DryRun timeout option",       "x402",      test_x402_timeout_opt),
-    ("x402 DryRun preferredChainId",     "x402",      test_x402_preferred_chain_id),
-    ("x402 DryRun idempotencyKey",       "x402",      test_x402_idempotency_key),
-    ("x402 Error INVALID_URL",           "x402",      test_x402_invalid_url),
-    ("x402 Legacy /pay endpoint",        "x402",      test_x402_legacy_pay_endpoint),
-    # X402 REAL fetch — actual TX for points!
-    ("x402 REAL Fetch (earns TX pts!)",  "x402",      test_x402_real_fetch),
-    # X402 FREE tier — STATUS=FREE flow
-    ("x402 Free Endpoint DryRun",         "x402",      test_x402_free_endpoint),
-    ("x402 REAL Free Fetch",              "x402",      test_x402_real_free_fetch),
-    ("x402 Activity FREE events check",   "x402",      test_x402_check_activity_free_events),
+    ("Policy GET",                          "policy",    test_policy_get),
+    ("Policy PATCH/PUT",                    "policy",    test_policy_patch),
+    # X402 dryRun
+    ("x402 DryRun auto-chain",             "x402",      test_x402_dry_auto),
+    ("x402 DryRun EVM",                    "x402",      test_x402_dry_evm),
+    ("x402 DryRun Solana",                 "x402",      test_x402_dry_solana),
+    ("x402 DryRun USDC",                   "x402",      test_x402_dry_usdc),
+    ("x402 DryRun USDT",                   "x402",      test_x402_dry_usdt),
+    ("x402 DryRun CASH",                   "x402",      test_x402_dry_cash),
+    ("x402 DryRun preferredChainId",       "x402",      test_x402_dry_chain_id),
+    ("x402 DryRun idempotencyKey",         "x402",      test_x402_dry_idem_key),
+    ("x402 DryRun timeout option",         "x402",      test_x402_dry_timeout),
+    ("x402 DryRun EVM+USDC",              "x402",      test_x402_dry_evm_usdc),
+    ("x402 DryRun Solana+USDC",           "x402",      test_x402_dry_solana_usdc),
+    ("x402 DryRun Solana+CASH",           "x402",      test_x402_dry_solana_cash),
+    ("x402 Error INVALID_URL",            "x402",      test_x402_invalid_url),
+    ("x402 Legacy /pay endpoint",         "x402",      test_x402_legacy_pay),
     # ACTIONS
-    ("Sign Message Ethereum",            "actions",   test_sign_ethereum),
-    ("Sign Message Solana",              "actions",   test_sign_solana),
-    ("Sign with walletAddress param",    "actions",   test_sign_with_wallet_address),
-    ("Faucet Solana Devnet",             "actions",   test_faucet_devnet),
-    # NETWORKS — EVM mainnet
-    ("Transfer Base (8453)",             "networks",  test_transfer_base),
-    ("Transfer Optimism (10)",           "networks",  test_transfer_optimism),
-    ("Transfer Polygon (137)",           "networks",  test_transfer_polygon),
-    ("Transfer Arbitrum (42161)",        "networks",  test_transfer_arbitrum),
-    ("Transfer BNB (56)",                "networks",  test_transfer_bnb),
-    ("Transfer Ethereum (1)",            "networks",  test_transfer_ethereum),
-    ("Transfer Gnosis (100)",            "networks",  test_transfer_gnosis),
-    # NETWORKS — EVM testnet
-    ("Transfer Sepolia testnet",         "networks",  test_transfer_sepolia),
-    ("Transfer Base Sepolia",            "networks",  test_transfer_base_sepolia),
-    ("Transfer + idempotencyKey",        "networks",  test_transfer_with_idempotency),
-    # NETWORKS — Solana
-    ("Transfer Solana mainnet",          "networks",  test_transfer_sol_mainnet),
-    ("Transfer Solana devnet",           "networks",  test_transfer_sol_devnet),
-    # NETWORKS — Contract calls
-    ("ContractCall EVM Base",            "networks",  test_contract_call_evm),
-    ("ContractCall Solana devnet",       "networks",  test_contract_call_solana),
-    # FEEDBACK — all 4 categories
-    ("Feedback category:other",          "feedback",  test_feedback_other),
-    ("Feedback category:bug",            "feedback",  test_feedback_bug),
-    ("Feedback category:feature",        "feedback",  test_feedback_feature),
-    ("Feedback category:stuck",          "feedback",  test_feedback_stuck),
+    ("Sign Message Ethereum",              "actions",   test_sign_ethereum),
+    ("Sign Message Solana",                "actions",   test_sign_solana),
+    ("Sign with walletAddress param",      "actions",   test_sign_with_wallet_address),
+    ("Faucet Solana Devnet",               "actions",   test_faucet_devnet),
+    # NETWORKS
+    ("Transfer Base (8453)",               "networks",  test_tx_base),
+    ("Transfer Optimism (10)",             "networks",  test_tx_optimism),
+    ("Transfer Polygon (137)",             "networks",  test_tx_polygon),
+    ("Transfer Arbitrum (42161)",          "networks",  test_tx_arbitrum),
+    ("Transfer BNB (56)",                  "networks",  test_tx_bnb),
+    ("Transfer Ethereum (1)",              "networks",  test_tx_ethereum),
+    ("Transfer Gnosis (100)",              "networks",  test_tx_gnosis),
+    ("Transfer Sepolia testnet",           "networks",  test_tx_sepolia),
+    ("Transfer Base Sepolia",              "networks",  test_tx_base_sepolia),
+    ("Transfer + idempotencyKey",          "networks",  test_tx_idempotency),
+    ("Transfer Solana mainnet",            "networks",  test_tx_sol_mainnet),
+    ("Transfer Solana devnet",             "networks",  test_tx_sol_devnet),
+    ("ContractCall EVM Base",              "networks",  test_contract_call_evm),
+    ("ContractCall Solana devnet",         "networks",  test_contract_call_solana),
+    # FEEDBACK
+    ("Feedback category:other",            "feedback",  test_feedback_other),
+    ("Feedback category:bug",              "feedback",  test_feedback_bug),
+    ("Feedback category:feature",          "feedback",  test_feedback_feature),
+    ("Feedback category:stuck",            "feedback",  test_feedback_stuck),
 ]
 
 
 # ─────────────────────────────────────────────────────────────
-# RUN ALL TESTS
+# RUN
 # ─────────────────────────────────────────────────────────────
 
-print(f"\n{'='*62}")
-print(f"  AgentWallet Monitor v4 ULTIMATE  |  {results['timestamp']}")
-print(f"  User: {USERNAME}  |  Total tests: {len(TESTS)}")
-print(f"{'='*62}")
+print(f"\n{'='*64}")
+print(f"  AgentWallet Monitor v5 ALL REGISTRY  |  {results['timestamp']}")
+print(f"  User: {USERNAME}  |  Tests: {len(TESTS)}")
+print(f"{'='*64}")
 
 last_cat = None
 for name, category, fn in TESTS:
@@ -779,7 +961,6 @@ for name, category, fn in TESTS:
         last_cat = category
     run_test(name, category, fn)
 
-# ── Tally ────────────────────────────────────────────────────
 passed = sum(1 for t in results["tests"] if t["status"] == "pass")
 failed = sum(1 for t in results["tests"] if t["status"] == "fail")
 warned = sum(1 for t in results["tests"] if t["status"] == "warn")
@@ -790,7 +971,6 @@ results["summary"] = {
     "warnings": warned, "overall": "pass" if failed == 0 else "fail",
 }
 
-# ── Persist history ───────────────────────────────────────────
 HISTORY_FILE = "docs/history.json"
 history = []
 if os.path.exists(HISTORY_FILE):
@@ -799,13 +979,11 @@ if os.path.exists(HISTORY_FILE):
             history = json.load(f)
     except Exception:
         history = []
-
 history.insert(0, {
     "timestamp": results["timestamp"], "passed": passed,
     "failed": failed, "warnings": warned,
     "overall": results["summary"]["overall"],
     "rank": results["meta"].get("rank"),
-    "real_tx": results["meta"].get("real_x402_done", False),
 })
 history = history[:100]
 
@@ -815,23 +993,16 @@ with open(HISTORY_FILE, "w") as f:
 with open("docs/status.json", "w") as f:
     json.dump(results, f, indent=2)
 
-# ── Print summary ─────────────────────────────────────────────
-print(f"\n{'='*62}")
-print(f"  RESULT   : {passed}/{total} passed | {failed} failed | {warned} warnings")
+print(f"\n{'='*64}")
+print(f"  RESULT  : {passed}/{total} passed | {failed} failed | {warned} warnings")
 if results["meta"]["balance_usd"] is not None:
-    print(f"  Balance  : ${results['meta']['balance_usd']} USD")
+    print(f"  Balance : ${results['meta']['balance_usd']} USD")
 if results["meta"]["rank"] is not None:
-    print(f"  Rank     : #{results['meta']['rank']}  |  Tier: {results['meta']['tier']}")
-if results["meta"]["airdrop_points"] is not None:
-    print(f"  Points   : {results['meta']['airdrop_points']} airdrop pts")
+    print(f"  Rank    : #{results['meta']['rank']} | Tier: {results['meta']['tier']}")
 if results["meta"]["referral_count"] is not None:
-    print(f"  Referrals: {results['meta']['referral_count']}")
-    print(f"  Ref link : https://frames.ag/connect?ref={USERNAME}")
-if results["meta"].get("real_x402_done"):
-    print(f"  Real TX  : ✅ {results['meta']['real_x402_amount']} on {results['meta']['real_x402_chain']}")
-else:
-    print(f"  Real TX  : ⚠️  skipped (fund wallet to earn TX points)")
-print(f"{'='*62}\n")
+    print(f"  Refs    : {results['meta']['referral_count']} | Pts: {results['meta']['airdrop_points']}")
+    print(f"  Link    : https://frames.ag/connect?ref={USERNAME}")
+print(f"{'='*64}\n")
 
 if failed > 0:
     for t in results["tests"]:
@@ -839,8 +1010,8 @@ if failed > 0:
             print(f"  HARD FAIL [{t['category']}] {t['name']} — {t['error']}")
     sys.exit(1)
 elif warned > 0:
-    print(f"  {warned} soft warning(s) — tier limits / rate limits / chain issues (all expected)")
+    print(f"  {warned} soft warning(s) — all expected")
     sys.exit(0)
 else:
-    print("  PERFECT RUN — 0 failures, 0 warnings!")
+    print("  PERFECT RUN!")
     sys.exit(0)
