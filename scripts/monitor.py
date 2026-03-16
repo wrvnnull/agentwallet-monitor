@@ -83,6 +83,8 @@ def run_test(name, category, fn):
 
 
 def _safe(r):
+    if r.status_code == 429:
+        raise AssertionError("429 rate-limited (too many requests) — wait for next run")
     r.raise_for_status()
     return r.json()
 
@@ -282,6 +284,7 @@ X402_TARGET = "https://registry.frames.ag/api/service/exa/api/search"
 X402_BODY   = {"query": "AI agent payments x402", "numResults": 1}
 
 def _x402_dry(extra=None):
+    time.sleep(2)  # avoid 429 on rapid sequential x402 calls
     payload = {"url": X402_TARGET, "method": "POST", "body": X402_BODY, "dryRun": True}
     if extra:
         payload.update(extra)
@@ -399,6 +402,7 @@ def test_x402_real_fetch():
 # ─────────────────────────────────────────────────────────────
 
 def test_sign_ethereum():
+    time.sleep(2)
     d = _safe(requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/sign-message",
                             headers=AUTH,
                             json={"chain": "ethereum",
@@ -408,6 +412,7 @@ def test_sign_ethereum():
     return {"chain": "ethereum", "signed": True}
 
 def test_sign_solana():
+    time.sleep(2)
     d = _safe(requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/sign-message",
                             headers=AUTH,
                             json={"chain": "solana",
@@ -418,6 +423,7 @@ def test_sign_solana():
 
 def test_sign_with_wallet_address():
     """Sign using explicit walletAddress param (multi-wallet feature)."""
+    time.sleep(2)
     evm_addr = results["meta"]["evm_address"] or ""
     if not evm_addr:
         raise AssertionError("No EVM address available (run wallet_info first)")
