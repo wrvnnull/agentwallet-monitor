@@ -77,8 +77,9 @@ def _network_check(r, label):
     Expected: 4xx (policy/funds/validation) = endpoint alive = PASS
     500 or timeout = server-side issue on that chain = WARN (AssertionError)
     """
-    if r.status_code == 500:
-        raise AssertionError(f"{label} returned 500 (server-side chain issue)")
+    if r.status_code in (429, 500):
+        code = "429 rate-limit" if r.status_code == 429 else "500 server error"
+        raise AssertionError(f"{label} returned {code} (server-side issue)")
     if r.status_code in (400, 402, 403, 422, 200):
         d = r.json()
         return {"status_code": r.status_code, "resp": str(d)[:120]}
