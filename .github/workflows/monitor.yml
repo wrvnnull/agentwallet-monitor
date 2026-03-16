@@ -2,17 +2,11 @@ name: 🔍 AgentWallet Monitor
 
 on:
   schedule:
-    # Every 5 minutes
     - cron: "*/5 * * * *"
   workflow_dispatch:
-    inputs:
-      debug:
-        description: "Enable debug output"
-        required: false
-        default: "false"
 
 permissions:
-  contents: write   # needed to commit status.json back to repo
+  contents: write
   pages: write
   id-token: write
 
@@ -21,80 +15,66 @@ jobs:
     name: Run Feature Tests
     runs-on: ubuntu-latest
     timeout-minutes: 4
+    outputs:
+      commit_sha: ${{ steps.commit.outputs.sha }}
 
     steps:
-      # ── 1. Checkout repo ──────────────────────────────────────
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # ── 2. Set up Python ──────────────────────────────────────
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          # NO cache: pip — avoids "no requirements.txt found" error
 
-      # ── 3. Install dependencies ───────────────────────────────
       - name: Install dependencies
-        run: |
-          pip install requests --quiet
+        run: pip install requests --quiet
 
-      # ── 4. Run monitor script ─────────────────────────────────
       - name: Run AgentWallet Monitor
         env:
           AGENTWALLET_USERNAME: ${{ secrets.AGENTWALLET_USERNAME }}
           AGENTWALLET_API_TOKEN: ${{ secrets.AGENTWALLET_API_TOKEN }}
           GITHUB_RUN_ID: ${{ github.run_id }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |
-          python scripts/monitor.py
+        run: python scripts/monitor.py
 
-      # ── 5. Commit results to repo (docs/) ─────────────────────
-      - name: Commit status results
+      - name: Commit & push status results
+        id: commit
         if: always()
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Pull latest to avoid push conflict
           git pull --rebase origin main || git pull --rebase origin master || true
           git add docs/status.json docs/history.json
-          # Only commit if there are staged changes
           if git diff --cached --quiet; then
             echo "No changes to commit"
+            echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           else
             git commit -m "📊 monitor: $(date -u '+%Y-%m-%d %H:%M UTC') [skip ci]"
             git push origin HEAD
+            echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
           fi
 
-      # ── 6. Upload run artifact (optional debug) ───────────────
-      - name: Upload status artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: monitor-status-${{ github.run_number }}
-          path: docs/status.json
-          if-no-files-found: warn
-          retention-days: 7
-
-  # ── Optional: re-deploy GitHub Pages if docs changed ─────────
   deploy-pages:
     name: Deploy GitHub Pages
-    needs: monitor
+    needs: monitor      # waits for monitor to finish + commit
     if: always()
     runs-on: ubuntu-latest
-    # Only deploy pages when triggered on main/master branch
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
-      - name: Checkout
+      # Checkout AFTER monitor has committed — gets fresh status.json
+      - name: Checkout latest (post-monitor)
         uses: actions/checkout@v4
         with:
-          ref: main   # always get latest commit (with status.json)
+          ref: main
           fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
