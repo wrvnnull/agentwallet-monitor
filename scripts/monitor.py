@@ -122,10 +122,10 @@ def _x402_fetch(url, method="POST", body=None, ikey=None, chain="evm",
     except requests.exceptions.Timeout:
         raise AssertionError("x402/fetch timed out (90s)")
 
-    if r.status_code in (429, 502, 503, 504):
-        raise AssertionError(f"x402/fetch server error {r.status_code} — retry next run")
-    if r.status_code == 429:
-        raise AssertionError("Rate limited — retry next run")
+    if r.status_code in (429, 500, 502, 503, 504):
+        code_label = {429:"rate-limit",500:"server error",502:"bad gateway",
+                      503:"unavailable",504:"gateway timeout"}.get(r.status_code, str(r.status_code))
+        raise AssertionError(f"x402/fetch {code_label} ({r.status_code}) — server-side, retry next run")
 
     r.raise_for_status()
     d = r.json()
@@ -720,6 +720,8 @@ def test_faucet_devnet():
                       headers=AUTH, json={}, timeout=30)
     if r.status_code == 429:
         raise AssertionError("Faucet rate-limited (3/24h)")
+    if r.status_code in (500, 502, 503, 504):
+        raise AssertionError(f"Faucet server error {r.status_code} — server-side, retry next run")
     r.raise_for_status()
     inner = r.json().get("data", r.json())
     return {"amount": inner.get("amount"), "remaining": inner.get("remaining")}
@@ -1138,6 +1140,8 @@ def test_faucet_with_wallet_address():
                       json={"walletAddress": sol}, timeout=30)
     if r.status_code == 429:
         raise AssertionError("Faucet rate-limited (3/24h)")
+    if r.status_code in (500, 502, 503, 504):
+        raise AssertionError(f"Faucet server error {r.status_code} — retry next run")
     r.raise_for_status()
     inner = r.json().get("data", r.json())
     return {"amount": inner.get("amount"), "remaining": inner.get("remaining"),
@@ -1277,8 +1281,8 @@ def _openrouter_chat(model, ikey):
                           headers=AUTH, json=payload, timeout=60)
     except requests.exceptions.Timeout:
         raise AssertionError(f"OpenRouter {model} timed out")
-    if r.status_code in (429, 502, 503, 504):
-        raise AssertionError(f"OpenRouter {model} server error {r.status_code}")
+    if r.status_code in (429, 500, 502, 503, 504):
+        raise AssertionError(f"OpenRouter {model} server error {r.status_code} — retry next run")
     r.raise_for_status()
     d = r.json()
     resp = d.get("response", {}).get("body", {})
