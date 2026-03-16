@@ -14,7 +14,7 @@ jobs:
   monitor:
     name: Run Feature Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 6      # bumped: 30s-timeout network tests need room
+    timeout-minutes: 6
 
     steps:
       - name: Checkout
@@ -44,7 +44,18 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin main || git pull --rebase origin master || true
+
+          # Stash any untracked/modified files BEFORE pull to avoid rebase conflict
+          git stash --include-untracked || true
+
+          # Pull latest from remote
+          git pull --rebase origin main 2>/dev/null || \
+          git pull --rebase origin master 2>/dev/null || true
+
+          # Restore our generated files
+          git stash pop || true
+
+          # Stage and commit if changed
           git add docs/status.json docs/history.json
           if git diff --cached --quiet; then
             echo "No changes to commit"
@@ -64,7 +75,7 @@ jobs:
 
   deploy-pages:
     name: Deploy GitHub Pages
-    needs: monitor          # always waits for monitor + commit
+    needs: monitor
     if: always()
     runs-on: ubuntu-latest
     environment:
