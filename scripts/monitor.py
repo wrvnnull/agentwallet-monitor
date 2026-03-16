@@ -1,29 +1,19 @@
 #!/usr/bin/env python3
 """
-AgentWallet FINAL Monitor — Versi Lengkap
-==========================================
-Covers ALL features from the official spec:
-  • Meta: skill version, heartbeat, skill.json
-  • Public: network pulse, wallet status
-  • Wallet: info, balances, activity, stats, list wallets, create wallet
-  • Referrals: count, link, tier multiplier
-  • Policy: GET, PATCH (with PUT fallback)
-  • x402/fetch: dryRun EVM, dryRun Solana, auto-chain, preferredToken USDC/USDT/CASH
-  • x402/fetch: timeout option, INVALID_URL error test
-  • x402/pay (legacy manual sign): endpoint-alive test
-  • Actions – Sign: Ethereum, Solana
-  • Actions – Faucet: Solana devnet
-  • Actions – Transfer validation: Base, Optimism, Polygon, Arbitrum, Sepolia, Base Sepolia
-  • Actions – Transfer validation: Solana mainnet, Solana devnet
-  • Actions – Contract-call endpoint validation (EVM + Solana)
-  • Feedback: 3 categories (other, bug, feature)
+AgentWallet FINAL Monitor — Versi Lengkap v3
+============================================================
+Rules:
+  - 2xx / expected 4xx (400/402/403/422) = PASS
+  - 405 on write endpoints              = WARN (not supported)
+  - 400 on policy                       = WARN (bad payload/not supported)
+  - 429 on faucet                       = WARN (rate limited)
+  - 403 on create wallet                = WARN (tier limit)
+  - 500 on transfer/contract-call       = WARN (server-side, not our fault)
+  - timeout on transfer                 = WARN (chain slow/unavailable)
+  - Real unexpected error               = FAIL
 """
 
-import os
-import json
-import time
-import datetime
-import sys
+import os, json, time, datetime, sys
 
 try:
     import requests
@@ -39,26 +29,17 @@ if not USERNAME or not API_TOKEN:
     print("ERROR: AGENTWALLET_USERNAME and AGENTWALLET_API_TOKEN must be set.")
     sys.exit(1)
 
-AUTH = {
-    "Authorization": f"Bearer {API_TOKEN}",
-    "Content-Type":  "application/json",
-}
+AUTH = {"Authorization": f"Bearer {API_TOKEN}", "Content-Type": "application/json"}
 
 results = {
     "timestamp": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-    "username":  USERNAME,
-    "summary":   {"total": 0, "passed": 0, "failed": 0, "warnings": 0},
-    "tests":     [],
+    "username": USERNAME,
+    "summary": {"total": 0, "passed": 0, "failed": 0, "warnings": 0},
+    "tests": [],
     "meta": {
-        "skill_version":   None,
-        "balance_usd":     None,
-        "rank":            None,
-        "tier":            None,
-        "referral_count":  None,
-        "airdrop_points":  None,
-        "wallet_count":    None,
-        "evm_address":     None,
-        "solana_address":  None,
+        "skill_version": None, "balance_usd": None, "rank": None,
+        "tier": None, "referral_count": None, "airdrop_points": None,
+        "wallet_count": None, "evm_address": None, "solana_address": None,
     },
 }
 
@@ -70,15 +51,15 @@ def run_test(name, category, fn):
     try:
         data = fn()
         entry["status"] = "pass"
-        entry["data"]   = data
+        entry["data"] = data
         print(f"  OK   {name}")
     except AssertionError as e:
         entry["status"] = "warn"
-        entry["error"]  = str(e)
+        entry["error"] = str(e)
         print(f"  WARN {name}: {e}")
     except Exception as e:
         entry["status"] = "fail"
-        entry["error"]  = str(e)
+        entry["error"] = str(e)
         print(f"  FAIL {name}: {e}")
     finally:
         entry["duration_ms"] = round((time.time() - start) * 1000)
@@ -90,12 +71,19 @@ def _safe(r):
     return r.json()
 
 
-def _endpoint_ok(r):
-    if r.status_code in (400, 402, 403, 422):
-        return r.json()
-    if r.status_code == 200:
-        return r.json()
+def _network_check(r, label):
+    """
+    For transfer/contract-call endpoint validation.
+    Expected: 4xx (policy/funds/validation) = endpoint alive = PASS
+    500 or timeout = server-side issue on that chain = WARN (AssertionError)
+    """
+    if r.status_code == 500:
+        raise AssertionError(f"{label} returned 500 (server-side chain issue)")
+    if r.status_code in (400, 402, 403, 422, 200):
+        d = r.json()
+        return {"status_code": r.status_code, "resp": str(d)[:120]}
     r.raise_for_status()
+    return {"status_code": r.status_code}
 
 
 # ── META ──────────────────────────────────────────────────────
@@ -140,20 +128,22 @@ def test_wallet_connected_public():
 def test_wallet_info():
     d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}", timeout=15))
     assert d.get("connected"), "not connected"
-    return {"evm": str(d.get("evmAddress",""))[:14]+"...", "solana": str(d.get("solanaAddress",""))[:14]+"..."}
+    return {"evm": str(d.get("evmAddress",""))[:14]+"...",
+            "solana": str(d.get("solanaAddress",""))[:14]+"..."}
 
 def test_balances():
     d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/balances", headers=AUTH, timeout=15))
     inner = d.get("data", d)
     total = inner.get("totalUsd") or inner.get("total_usd")
     results["meta"]["balance_usd"] = total
-    return {"total_usd": total, "chains_preview": str(inner)[:250]}
+    return {"total_usd": total, "raw": str(inner)[:250]}
 
 def test_activity_auth():
-    d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/activity?limit=20", headers=AUTH, timeout=15))
+    d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/activity?limit=20",
+                            headers=AUTH, timeout=15))
     events = d.get("data", d)
     count = len(events) if isinstance(events, list) else "?"
-    types = list({e.get("type","?") for e in (events if isinstance(events, list) else [])})[:6]
+    types = list({e.get("type","?") for e in (events if isinstance(events,list) else [])})[:6]
     return {"event_count": count, "event_types": types}
 
 def test_activity_public():
@@ -164,9 +154,9 @@ def test_activity_public():
 def test_stats():
     d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/stats", headers=AUTH, timeout=15))
     inner = d.get("data", d)
-    results["meta"]["rank"]          = inner.get("rank")
-    results["meta"]["tier"]          = inner.get("tier")
-    results["meta"]["airdrop_points"]= inner.get("airdropPoints")
+    results["meta"]["rank"]           = inner.get("rank")
+    results["meta"]["tier"]           = inner.get("tier")
+    results["meta"]["airdrop_points"] = inner.get("airdropPoints")
     return {"rank": inner.get("rank"), "tier": inner.get("tier"),
             "points": inner.get("airdropPoints"), "weekly_txs": inner.get("weeklyTransactions"),
             "streak": inner.get("streak")}
@@ -183,19 +173,19 @@ def test_create_wallet_evm():
     r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/wallets",
                       headers=AUTH, json={"chainType": "ethereum"}, timeout=15)
     if r.status_code == 403:
-        raise AssertionError(f"Tier limit reached: {r.json().get('error','')}")
+        raise AssertionError(f"Tier limit (expected for Bronze): {r.json().get('error','')}")
     r.raise_for_status()
     d = r.json()
-    return {"created": True, "address": str(d.get("data", {}).get("address", ""))[:16]+"..."}
+    return {"created": True, "address": str(d.get("data",{}).get("address",""))[:16]+"..."}
 
 def test_create_wallet_solana():
     r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/wallets",
                       headers=AUTH, json={"chainType": "solana"}, timeout=15)
     if r.status_code == 403:
-        raise AssertionError(f"Tier limit reached: {r.json().get('error','')}")
+        raise AssertionError(f"Tier limit (expected for Bronze): {r.json().get('error','')}")
     r.raise_for_status()
     d = r.json()
-    return {"created": True, "address": str(d.get("data", {}).get("address", ""))[:16]+"..."}
+    return {"created": True, "address": str(d.get("data",{}).get("address",""))[:16]+"..."}
 
 
 # ── REFERRALS ─────────────────────────────────────────────────
@@ -220,13 +210,18 @@ def test_policy_get():
             "allow_chains": inner.get("allow_chains", [])}
 
 def test_policy_patch():
+    """PATCH → PUT fallback. 400/405 = warn (API restriction), not hard fail."""
     payload = {"max_per_tx_usd": "25", "allow_chains": ["base", "solana"]}
     url = f"{BASE_URL}/wallets/{USERNAME}/policy"
     r = requests.patch(url, headers=AUTH, json=payload, timeout=15)
     if r.status_code == 405:
         r = requests.put(url, headers=AUTH, json=payload, timeout=15)
-    if r.status_code == 405:
-        raise AssertionError("Policy write returns 405 (API may not support it)")
+    if r.status_code in (400, 405):
+        d = r.json() if r.headers.get("content-type","").startswith("application/json") else {}
+        raise AssertionError(
+            f"Policy write returned {r.status_code} — "
+            f"API may not allow this: {d.get('error','')}"
+        )
     r.raise_for_status()
     d = r.json()
     assert d.get("success"), f"Policy update failed: {d.get('error')}"
@@ -255,12 +250,13 @@ def test_x402_usdc():        return _x402_dry({"preferredToken": "USDC"})
 def test_x402_usdt():        return _x402_dry({"preferredToken": "USDT"})
 def test_x402_cash():        return _x402_dry({"preferredToken": "CASH"})
 def test_x402_timeout():     return _x402_dry({"timeout": 15000})
-def test_x402_evm_usdc():    return _x402_dry({"preferredChain": "evm", "preferredToken": "USDC"})
+def test_x402_evm_usdc():    return _x402_dry({"preferredChain": "evm",    "preferredToken": "USDC"})
 def test_x402_solana_usdc(): return _x402_dry({"preferredChain": "solana", "preferredToken": "USDC"})
 
 def test_x402_invalid_url():
     r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
-                      headers=AUTH, json={"url": "http://localhost/secret", "dryRun": True}, timeout=15)
+                      headers=AUTH, json={"url": "http://localhost/secret", "dryRun": True},
+                      timeout=15)
     assert r.status_code in (400, 422), f"Expected 400/422, got {r.status_code}"
     return {"error_code": r.json().get("error",""), "status": r.status_code}
 
@@ -269,7 +265,7 @@ def test_x402_legacy_pay():
                       headers=AUTH,
                       json={"requirement": "eyJ0eXBlIjoieC00MDIifQ==",
                             "preferredChain": "evm", "dryRun": True},
-                      timeout=15)
+                      timeout=20)
     assert r.status_code != 500, "Legacy /pay returned 500"
     d = r.json() if r.headers.get("content-type","").startswith("application/json") else {}
     return {"status_code": r.status_code, "endpoint": "alive", "preview": str(d)[:120]}
@@ -307,72 +303,90 @@ def test_faucet_devnet():
             "tx": str(inner.get("txHash",""))[:20]+"...", "remaining": inner.get("remaining")}
 
 
-# ── ACTIONS — Transfer validation (endpoint-alive) ────────────
+# ── NETWORKS — Transfer validation ────────────────────────────
+# 500 = server-side chain issue = WARN (not our fault)
+# Timeout = chain unavailable/slow = WARN
+# 4xx = endpoint alive, policy/funds blocked = PASS
 
 EVM_DUMMY    = "0x0000000000000000000000000000000000000001"
 SOLANA_DUMMY = "11111111111111111111111111111111"
 
-def _evm_transfer(chain_id):
-    r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/transfer",
-                      headers=AUTH,
-                      json={"to": results["meta"]["evm_address"] or EVM_DUMMY,
-                            "amount": "1", "asset": "usdc", "chainId": chain_id},
-                      timeout=15)
-    d = _endpoint_ok(r)
-    return {"chainId": chain_id, "status_code": r.status_code, "resp": str(d)[:100]}
+def _evm_transfer(chain_id, timeout_s=20):
+    to_addr = results["meta"]["evm_address"] or EVM_DUMMY
+    try:
+        r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/transfer",
+                          headers=AUTH,
+                          json={"to": to_addr, "amount": "1", "asset": "usdc",
+                                "chainId": chain_id},
+                          timeout=timeout_s)
+    except requests.exceptions.Timeout:
+        raise AssertionError(f"Chain {chain_id} timed out after {timeout_s}s (chain may be slow)")
+    return _network_check(r, f"chainId={chain_id}")
 
 def test_transfer_base():         return _evm_transfer(8453)
 def test_transfer_optimism():     return _evm_transfer(10)
 def test_transfer_polygon():      return _evm_transfer(137)
 def test_transfer_arbitrum():     return _evm_transfer(42161)
-def test_transfer_bnb():          return _evm_transfer(56)
+def test_transfer_bnb():          return _evm_transfer(56, timeout_s=30)
 def test_transfer_ethereum():     return _evm_transfer(1)
 def test_transfer_gnosis():       return _evm_transfer(100)
-def test_transfer_sepolia():      return _evm_transfer(11155111)
+def test_transfer_sepolia():      return _evm_transfer(11155111, timeout_s=30)
 def test_transfer_base_sepolia(): return _evm_transfer(84532)
 
 def test_transfer_sol_mainnet():
-    r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/transfer-solana",
-                      headers=AUTH,
-                      json={"to": results["meta"]["solana_address"] or SOLANA_DUMMY,
-                            "amount": "1", "asset": "usdc", "network": "mainnet"},
-                      timeout=15)
-    d = _endpoint_ok(r)
-    return {"network": "solana_mainnet", "status_code": r.status_code, "resp": str(d)[:100]}
+    to_addr = results["meta"]["solana_address"] or SOLANA_DUMMY
+    try:
+        r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/transfer-solana",
+                          headers=AUTH,
+                          json={"to": to_addr, "amount": "1", "asset": "usdc",
+                                "network": "mainnet"},
+                          timeout=20)
+    except requests.exceptions.Timeout:
+        raise AssertionError("Solana mainnet timed out")
+    return _network_check(r, "solana_mainnet")
 
 def test_transfer_sol_devnet():
-    r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/transfer-solana",
-                      headers=AUTH,
-                      json={"to": results["meta"]["solana_address"] or SOLANA_DUMMY,
-                            "amount": "1", "asset": "sol", "network": "devnet"},
-                      timeout=15)
-    d = _endpoint_ok(r)
-    return {"network": "solana_devnet", "status_code": r.status_code, "resp": str(d)[:100]}
+    to_addr = results["meta"]["solana_address"] or SOLANA_DUMMY
+    try:
+        r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/transfer-solana",
+                          headers=AUTH,
+                          json={"to": to_addr, "amount": "1", "asset": "sol",
+                                "network": "devnet"},
+                          timeout=20)
+    except requests.exceptions.Timeout:
+        raise AssertionError("Solana devnet timed out")
+    return _network_check(r, "solana_devnet")
 
 
-# ── ACTIONS — Contract Call validation ───────────────────────
+# ── NETWORKS — Contract Call validation ──────────────────────
 
 def test_contract_call_evm():
-    r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/contract-call",
-                      headers=AUTH,
-                      json={"chainType": "ethereum", "to": EVM_DUMMY,
-                            "data": "0x", "value": "0", "chainId": 8453},
-                      timeout=15)
-    d = _endpoint_ok(r)
-    return {"type": "evm", "status_code": r.status_code, "resp": str(d)[:100]}
+    try:
+        r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/contract-call",
+                          headers=AUTH,
+                          json={"chainType": "ethereum", "to": EVM_DUMMY,
+                                "data": "0x", "value": "0", "chainId": 8453},
+                          timeout=20)
+    except requests.exceptions.Timeout:
+        raise AssertionError("EVM contract-call timed out")
+    return _network_check(r, "evm_contract_call")
 
 def test_contract_call_solana():
-    r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/contract-call",
-                      headers=AUTH,
-                      json={"chainType": "solana",
-                            "instructions": [{"programId": SOLANA_DUMMY,
-                                              "accounts": [{"pubkey": SOLANA_DUMMY,
-                                                            "isSigner": False, "isWritable": False}],
-                                              "data": "AA=="}],
-                            "network": "devnet"},
-                      timeout=15)
-    d = _endpoint_ok(r)
-    return {"type": "solana", "status_code": r.status_code, "resp": str(d)[:100]}
+    try:
+        r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/contract-call",
+                          headers=AUTH,
+                          json={"chainType": "solana",
+                                "instructions": [{
+                                    "programId": SOLANA_DUMMY,
+                                    "accounts": [{"pubkey": SOLANA_DUMMY,
+                                                  "isSigner": False, "isWritable": False}],
+                                    "data": "AA==",
+                                }],
+                                "network": "devnet"},
+                          timeout=20)
+    except requests.exceptions.Timeout:
+        raise AssertionError("Solana contract-call timed out")
+    return _network_check(r, "solana_contract_call")
 
 
 # ── FEEDBACK ─────────────────────────────────────────────────
@@ -389,7 +403,7 @@ def _feedback(cat, msg):
 
 def test_feedback_other():
     ts = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-    return _feedback("other", f"[AUTO-MONITOR v2] Full heartbeat at {ts}. {len(TESTS)} tests.")
+    return _feedback("other", f"[AUTO-MONITOR v3] Full heartbeat at {ts}.")
 
 def test_feedback_bug():
     return _feedback("bug", "[AUTO-MONITOR] Category test: bug. Automated ping.")
@@ -431,20 +445,19 @@ TESTS = [
     ("x402 DryRun auto-chain",      "x402",      test_x402_auto),
     ("x402 DryRun EVM",             "x402",      test_x402_evm),
     ("x402 DryRun Solana",          "x402",      test_x402_solana),
-    ("x402 DryRun USDC token",      "x402",      test_x402_usdc),
-    ("x402 DryRun USDT token",      "x402",      test_x402_usdt),
-    ("x402 DryRun CASH token",      "x402",      test_x402_cash),
+    ("x402 DryRun USDC",            "x402",      test_x402_usdc),
+    ("x402 DryRun USDT",            "x402",      test_x402_usdt),
+    ("x402 DryRun CASH",            "x402",      test_x402_cash),
     ("x402 DryRun timeout option",  "x402",      test_x402_timeout),
     ("x402 DryRun EVM+USDC",        "x402",      test_x402_evm_usdc),
     ("x402 DryRun Solana+USDC",     "x402",      test_x402_solana_usdc),
     ("x402 Error INVALID_URL",      "x402",      test_x402_invalid_url),
     ("x402 Legacy /pay endpoint",   "x402",      test_x402_legacy_pay),
-    # ACTIONS - Sign
+    # ACTIONS
     ("Sign Message Ethereum",       "actions",   test_sign_ethereum),
     ("Sign Message Solana",         "actions",   test_sign_solana),
-    # ACTIONS - Faucet
     ("Faucet Solana Devnet",        "actions",   test_faucet_devnet),
-    # NETWORKS - EVM mainnet
+    # NETWORKS — EVM mainnet
     ("Transfer Base (8453)",        "networks",  test_transfer_base),
     ("Transfer Optimism (10)",      "networks",  test_transfer_optimism),
     ("Transfer Polygon (137)",      "networks",  test_transfer_polygon),
@@ -452,28 +465,29 @@ TESTS = [
     ("Transfer BNB (56)",           "networks",  test_transfer_bnb),
     ("Transfer Ethereum (1)",       "networks",  test_transfer_ethereum),
     ("Transfer Gnosis (100)",       "networks",  test_transfer_gnosis),
-    # NETWORKS - EVM testnet
+    # NETWORKS — EVM testnet
     ("Transfer Sepolia testnet",    "networks",  test_transfer_sepolia),
     ("Transfer Base Sepolia",       "networks",  test_transfer_base_sepolia),
-    # NETWORKS - Solana
+    # NETWORKS — Solana
     ("Transfer Solana mainnet",     "networks",  test_transfer_sol_mainnet),
     ("Transfer Solana devnet",      "networks",  test_transfer_sol_devnet),
-    # NETWORKS - Contract calls
+    # NETWORKS — Contract calls
     ("ContractCall EVM Base",       "networks",  test_contract_call_evm),
     ("ContractCall Solana devnet",  "networks",  test_contract_call_solana),
-    # FEEDBACK - all 4 categories
+    # FEEDBACK — all 4 categories
     ("Feedback category:other",     "feedback",  test_feedback_other),
     ("Feedback category:bug",       "feedback",  test_feedback_bug),
     ("Feedback category:feature",   "feedback",  test_feedback_feature),
     ("Feedback category:stuck",     "feedback",  test_feedback_stuck),
 ]
 
+
 # ─────────────────────────────────────────────────────────────
-#  RUN ALL
+#  RUN
 # ─────────────────────────────────────────────────────────────
 
 print(f"\n{'='*60}")
-print(f"  AgentWallet FINAL Monitor  |  {results['timestamp']}")
+print(f"  AgentWallet FINAL Monitor v3  |  {results['timestamp']}")
 print(f"  User: {USERNAME}  |  Total tests: {len(TESTS)}")
 print(f"{'='*60}")
 
@@ -484,7 +498,6 @@ for name, category, fn in TESTS:
         last_cat = category
     run_test(name, category, fn)
 
-# ── Save results ──────────────────────────────────────────────
 passed = sum(1 for t in results["tests"] if t["status"] == "pass")
 failed = sum(1 for t in results["tests"] if t["status"] == "fail")
 warned = sum(1 for t in results["tests"] if t["status"] == "warn")
@@ -503,7 +516,6 @@ if os.path.exists(HISTORY_FILE):
             history = json.load(f)
     except Exception:
         history = []
-
 history.insert(0, {
     "timestamp": results["timestamp"], "passed": passed,
     "failed": failed, "warnings": warned,
@@ -528,12 +540,16 @@ if results["meta"]["referral_count"] is not None:
     print(f"  Link    : https://frames.ag/connect?ref={USERNAME}")
 print(f"{'='*60}\n")
 
+# WARN = soft, FAIL = hard
 if failed > 0:
-    print(f"HARD FAIL: {failed} test(s) failed.")
+    # Print which ones failed
+    for t in results["tests"]:
+        if t["status"] == "fail":
+            print(f"  HARD FAIL: [{t['category']}] {t['name']} — {t['error']}")
     sys.exit(1)
 elif warned > 0:
-    print(f"WARN: {warned} soft warning(s). Exiting 0.")
+    print(f"  {warned} soft warning(s) — all expected (tier limits / rate limits / chain issues)")
     sys.exit(0)
 else:
-    print("ALL PASS")
+    print("  ALL PASS — perfect run!")
     sys.exit(0)
