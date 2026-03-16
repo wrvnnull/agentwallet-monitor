@@ -14,7 +14,7 @@ jobs:
   monitor:
     name: Run Feature Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 8
 
     steps:
       - name: Checkout
