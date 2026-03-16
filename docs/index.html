@@ -1,324 +1,368 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>AgentWallet Monitor</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg:        #09090f;
-      --surface:   #111120;
-      --surface2:  #181830;
-      --border:    #2a2a50;
-      --accent:    #6c63ff;
-      --accent2:   #00e5a0;
-      --warn:      #f5a623;
-      --danger:    #ff4d6d;
-      --text:      #e8e8ff;
-      --muted:     #6868a8;
-      --mono:      'JetBrains Mono', monospace;
-      --sans:      'Syne', sans-serif;
+      --bg:      #09090f; --surface:  #111120; --surface2: #181830;
+      --border:  #2a2a50; --accent:   #6c63ff; --accent2:  #00e5a0;
+      --warn:    #f5a623; --danger:   #ff4d6d; --text:     #e8e8ff;
+      --muted:   #6868a8; --mono: 'JetBrains Mono',monospace;
+      --sans: 'Syne',sans-serif;
     }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;
+      background-image:linear-gradient(rgba(108,99,255,.04) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(108,99,255,.04) 1px,transparent 1px);
+      background-size:40px 40px;pointer-events:none;z-index:0}
+    .wrap{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:24px 16px 100px}
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Header */
+    header{display:flex;justify-content:space-between;align-items:flex-end;
+      margin-bottom:28px;border-bottom:1px solid var(--border);padding-bottom:18px}
+    .logo{font-family:var(--sans);font-weight:800;font-size:1.4rem;letter-spacing:-.02em}
+    .logo span{color:var(--accent)}
+    .logo-sub{font-size:.72rem;color:var(--muted);margin-top:3px}
+    .header-right{text-align:right;font-size:.72rem;color:var(--muted)}
+    #last-updated{color:var(--accent2)}
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--mono);
-      min-height: 100vh;
-      overflow-x: hidden;
+    /* Status banner */
+    .status-banner{
+      display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+      padding:14px 18px;border-radius:12px;margin-bottom:24px;
+      border:1px solid;font-family:var(--sans);font-weight:600;font-size:.9rem;
     }
+    .status-banner.pass{background:rgba(0,229,160,.07);border-color:rgba(0,229,160,.3);color:var(--accent2)}
+    .status-banner.fail{background:rgba(255,77,109,.07);border-color:rgba(255,77,109,.3);color:var(--danger)}
+    .status-banner.warn{background:rgba(245,166,35,.07);border-color:rgba(245,166,35,.3);color:var(--warn)}
+    .pulse{width:10px;height:10px;border-radius:50%;animation:pulse 1.5s ease-in-out infinite}
+    .pulse.pass{background:var(--accent2);box-shadow:0 0 0 0 rgba(0,229,160,.4)}
+    .pulse.fail{background:var(--danger);box-shadow:0 0 0 0 rgba(255,77,109,.4)}
+    .pulse.warn{background:var(--warn);box-shadow:0 0 0 0 rgba(245,166,35,.4)}
+    @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
 
-    /* ── Grid background ── */
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(rgba(108,99,255,.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(108,99,255,.04) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
+    /* Ref banner */
+    .ref-banner{
+      display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+      background:linear-gradient(135deg,rgba(108,99,255,.12),rgba(0,229,160,.08));
+      border:1px solid rgba(108,99,255,.3);border-radius:12px;
+      padding:14px 18px;margin-bottom:24px;
     }
+    .ref-banner-left{font-size:.8rem}
+    .ref-banner-left .lbl{color:var(--muted);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+    .ref-banner-left .val{color:var(--accent2);font-weight:600}
+    .ref-btn{
+      background:var(--accent);color:#fff;border:none;border-radius:8px;
+      padding:8px 16px;font-family:var(--mono);font-size:.75rem;font-weight:600;
+      cursor:pointer;transition:opacity .15s;text-decoration:none;display:inline-block;
+    }
+    .ref-btn:hover{opacity:.85}
 
-    .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 24px 16px 80px; }
+    /* Rank card */
+    .rank-hero{
+      background:var(--surface);border:1px solid var(--border);border-radius:14px;
+      padding:20px 24px;margin-bottom:20px;
+      display:flex;align-items:center;gap:24px;flex-wrap:wrap;
+    }
+    .rank-num{font-family:var(--sans);font-size:3.5rem;font-weight:800;
+      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+    .rank-details{flex:1;min-width:140px}
+    .rank-label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+    .rank-tier{font-family:var(--sans);font-weight:700;font-size:1.1rem;color:var(--warn);margin-bottom:8px}
+    .tier-bar-wrap{background:var(--border);border-radius:4px;height:6px;width:180px;max-width:100%}
+    .tier-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s ease}
+    .tier-label{font-size:.65rem;color:var(--muted);margin-top:4px}
 
-    /* ── Header ── */
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      margin-bottom: 32px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 20px;
-    }
-    .logo { font-family: var(--sans); font-weight: 800; font-size: 1.4rem; letter-spacing: -0.02em; }
-    .logo span { color: var(--accent); }
-    .logo-sub { font-size: .75rem; color: var(--muted); margin-top: 2px; }
-    .header-right { text-align: right; font-size: .75rem; color: var(--muted); }
-    #last-updated { color: var(--accent2); }
+    /* Summary grid */
+    .summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:24px}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;transition:border-color .2s}
+    .card:hover{border-color:var(--accent)}
+    .card-label{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+    .card-value{font-family:var(--sans);font-size:1.9rem;font-weight:800;line-height:1}
+    .card-value.green{color:var(--accent2)} .card-value.red{color:var(--danger)}
+    .card-value.gold{color:var(--warn)}     .card-value.purple{color:var(--accent)}
+    .card-sub{font-size:.65rem;color:var(--muted);margin-top:4px}
 
-    /* ── Pill badge ── */
-    .badge {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-size: .7rem; font-weight: 600; padding: 3px 10px;
-      border-radius: 100px; letter-spacing: .05em; text-transform: uppercase;
+    /* Real TX badge */
+    .tx-badge{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.3);
+      border-radius:8px;padding:6px 12px;font-size:.72rem;color:var(--accent2);
     }
-    .badge.pass  { background: rgba(0,229,160,.12); color: var(--accent2); border: 1px solid rgba(0,229,160,.3); }
-    .badge.fail  { background: rgba(255,77,109,.12); color: var(--danger);  border: 1px solid rgba(255,77,109,.3); }
-    .badge.warn  { background: rgba(245,166,35,.12); color: var(--warn);    border: 1px solid rgba(245,166,35,.3); }
-    .badge.info  { background: rgba(108,99,255,.12); color: var(--accent);  border: 1px solid rgba(108,99,255,.3); }
+    .tx-badge.skip{background:rgba(245,166,35,.08);border-color:rgba(245,166,35,.2);color:var(--warn)}
 
-    .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
-    .dot.pass  { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
-    .dot.fail  { background: var(--danger);  box-shadow: 0 0 6px var(--danger); }
-    .dot.warn  { background: var(--warn);    box-shadow: 0 0 6px var(--warn); }
+    /* Section heading */
+    h2{font-family:var(--sans);font-size:.8rem;font-weight:600;text-transform:uppercase;
+      letter-spacing:.1em;color:var(--muted);margin:28px 0 10px;
+      display:flex;align-items:center;gap:8px}
+    h2::after{content:'';flex:1;height:1px;background:var(--border)}
 
-    /* ── Summary cards ── */
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 12px;
-      margin-bottom: 28px;
-    }
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px 18px;
-      transition: border-color .2s;
-    }
-    .card:hover { border-color: var(--accent); }
-    .card-label { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
-    .card-value { font-family: var(--sans); font-size: 2rem; font-weight: 800; line-height: 1; }
-    .card-value.green { color: var(--accent2); }
-    .card-value.red   { color: var(--danger); }
-    .card-value.gold  { color: var(--warn); }
-    .card-value.purple{ color: var(--accent); }
+    /* History */
+    .spark-row{display:flex;gap:2px;align-items:flex-end;height:44px}
+    .spark-bar{flex:1;min-width:5px;border-radius:2px 2px 0 0;cursor:pointer;transition:opacity .15s}
+    .spark-bar.pass{background:var(--accent2)}
+    .spark-bar.fail{background:var(--danger)}
+    .spark-bar.partial{background:var(--warn)}
+    .spark-bar:hover{opacity:.65}
+    .history-meta{display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted);margin-top:3px}
 
-    /* ── Section heading ── */
-    h2 {
-      font-family: var(--sans); font-size: .85rem; font-weight: 600;
-      text-transform: uppercase; letter-spacing: .1em;
-      color: var(--muted); margin: 28px 0 12px;
-      display: flex; align-items: center; gap: 8px;
+    /* Category filter */
+    .filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+    .filter-btn{
+      font-family:var(--mono);font-size:.65rem;padding:4px 10px;border-radius:6px;
+      border:1px solid var(--border);background:var(--surface2);color:var(--muted);
+      cursor:pointer;transition:all .15s;
     }
-    h2::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .filter-btn:hover,.filter-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(108,99,255,.1)}
 
-    /* ── Test table ── */
-    .test-table { width: 100%; border-collapse: collapse; }
-    .test-table th {
-      text-align: left; font-size: .65rem; color: var(--muted);
-      text-transform: uppercase; letter-spacing: .08em;
-      padding: 8px 12px; border-bottom: 1px solid var(--border);
-    }
-    .test-table td { padding: 9px 12px; font-size: .78rem; border-bottom: 1px solid rgba(42,42,80,.5); vertical-align: top; }
-    .test-table tr:hover td { background: rgba(108,99,255,.04); }
-    .test-table tr:last-child td { border-bottom: none; }
+    /* Test table */
+    .test-table{width:100%;border-collapse:collapse}
+    .test-table th{text-align:left;font-size:.62rem;color:var(--muted);text-transform:uppercase;
+      letter-spacing:.08em;padding:7px 10px;border-bottom:1px solid var(--border)}
+    .test-table td{padding:8px 10px;font-size:.76rem;border-bottom:1px solid rgba(42,42,80,.4);vertical-align:top}
+    .test-table tr:hover td{background:rgba(108,99,255,.04)}
+    .test-table tr:last-child td{border-bottom:none}
+    .test-name{color:var(--text);font-weight:600}
+    .test-cat{font-size:.65rem;color:var(--muted);display:flex;align-items:center;gap:4px}
+    .test-dur{color:var(--muted);font-size:.68rem;text-align:right;white-space:nowrap}
+    .test-err{color:var(--danger);font-size:.67rem;word-break:break-all;margin-top:2px}
+    .test-data{color:var(--muted);font-size:.65rem;max-width:340px;word-break:break-word;
+      overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 
-    .test-name { color: var(--text); }
-    .test-cat  { color: var(--muted); font-size: .68rem; }
-    .test-dur  { color: var(--muted); font-size: .72rem; text-align: right; white-space: nowrap; }
-    .test-err  { color: var(--danger); font-size: .7rem; word-break: break-all; }
-    .test-data {
-      color: var(--muted); font-size: .68rem;
-      max-width: 320px; word-break: break-word;
-      max-height: 3.5em; overflow: hidden;
-    }
+    /* Status dot */
+    .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+    .dot.pass{background:var(--accent2);box-shadow:0 0 5px var(--accent2)}
+    .dot.fail{background:var(--danger); box-shadow:0 0 5px var(--danger)}
+    .dot.warn{background:var(--warn);   box-shadow:0 0 5px var(--warn)}
 
-    /* ── History sparkline ── */
-    .history-wrap { overflow: hidden; }
-    .spark-row { display: flex; gap: 3px; align-items: flex-end; height: 40px; }
-    .spark-bar {
-      flex: 1; min-width: 6px; border-radius: 3px 3px 0 0;
-      transition: opacity .15s;
-      cursor: default;
-    }
-    .spark-bar.pass { background: var(--accent2); }
-    .spark-bar.fail { background: var(--danger); }
-    .spark-bar.partial { background: var(--warn); }
-    .spark-bar:hover { opacity: .7; }
+    /* Category dot */
+    .cat-dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
 
-    /* ── Meta strip ── */
-    .meta-strip {
-      display: flex; flex-wrap: wrap; gap: 8px;
-      margin-bottom: 20px;
-    }
-    .meta-chip {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 6px; padding: 4px 12px; font-size: .72rem;
-    }
-    .meta-chip .k { color: var(--muted); }
-    .meta-chip .v { color: var(--accent2); margin-left: 4px; }
+    /* Loading */
+    .loading{text-align:center;padding:80px 20px;color:var(--muted)}
+    .loading-spin{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--accent);
+      border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .error-box{background:rgba(255,77,109,.06);border:1px solid rgba(255,77,109,.25);
+      border-radius:10px;padding:20px;text-align:center;color:var(--danger);font-size:.82rem}
 
-    /* ── Loading / error ── */
-    .loading { text-align: center; padding: 80px 20px; color: var(--muted); }
-    .loading-spin {
-      width: 36px; height: 36px; border: 3px solid var(--border);
-      border-top-color: var(--accent); border-radius: 50%;
-      animation: spin .8s linear infinite;
-      margin: 0 auto 16px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    /* Refresh bar */
+    .refresh-bar{position:fixed;bottom:0;left:0;right:0;height:3px;background:var(--border)}
+    #rp{height:100%;background:var(--accent);transition:width 1s linear}
+    .refresh-label{position:fixed;bottom:8px;right:14px;font-size:.62rem;color:var(--muted)}
 
-    .error-box {
-      background: rgba(255,77,109,.08); border: 1px solid rgba(255,77,109,.3);
-      border-radius: 10px; padding: 20px; text-align: center; color: var(--danger);
-      font-size: .85rem;
-    }
-
-    /* ── Refresh countdown ── */
-    .refresh-bar {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      height: 3px; background: var(--border);
-    }
-    #refresh-progress {
-      height: 100%; background: var(--accent);
-      transition: width 1s linear;
-    }
-    .refresh-label {
-      position: fixed; bottom: 8px; right: 16px;
-      font-size: .65rem; color: var(--muted);
-    }
-
-    /* ── Category color dots ── */
-    .cat-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: middle; }
-    .cat-meta      { background: #8888ff; }
-    .cat-public    { background: #44aaff; }
-    .cat-wallet    { background: #00e5a0; }
-    .cat-policy    { background: #f5a623; }
-    .cat-x402      { background: #ff79c6; }
-    .cat-actions   { background: #bd93f9; }
-    .cat-feedback  { background: #ff6e6e; }
-    .cat-referrals { background: #50fa7b; }
-
-    @media (max-width: 600px) {
-      .card-value { font-size: 1.5rem; }
-      .summary-grid { grid-template-columns: repeat(2, 1fr); }
-      header { flex-direction: column; gap: 8px; align-items: flex-start; }
+    @media(max-width:600px){
+      .card-value{font-size:1.5rem}
+      .summary-grid{grid-template-columns:repeat(2,1fr)}
+      header{flex-direction:column;gap:8px;align-items:flex-start}
+      .rank-hero{flex-direction:column;align-items:flex-start}
     }
   </style>
 </head>
 <body>
 <div class="wrap">
-
   <header>
     <div>
       <div class="logo">Agent<span>Wallet</span> Monitor</div>
-      <div class="logo-sub">Full-feature automated test suite · GitHub Actions</div>
+      <div class="logo-sub">Full-feature automated suite · GitHub Actions · every 5 min</div>
     </div>
     <div class="header-right">
-      Auto-refresh in <span id="countdown">60</span>s<br>
+      Refresh in <span id="cd">60</span>s<br>
       Last: <span id="last-updated">—</span>
     </div>
   </header>
 
   <div id="app">
-    <div class="loading">
-      <div class="loading-spin"></div>
-      Loading status…
-    </div>
+    <div class="loading"><div class="loading-spin"></div>Loading status…</div>
   </div>
-
 </div>
 
-<div class="refresh-bar"><div id="refresh-progress" style="width:100%"></div></div>
-<div class="refresh-label">Refreshing in <span id="countdown2">60</span>s</div>
+<div class="refresh-bar"><div id="rp" style="width:100%"></div></div>
+<div class="refresh-label">Refreshing in <span id="cd2">60</span>s</div>
 
 <script>
-const REFRESH_SEC = 60;
-
-// ── Category colours
-const CAT_CLS = {
-  meta:'cat-meta', public:'cat-public', wallet:'cat-wallet',
-  policy:'cat-policy', x402:'cat-x402', actions:'cat-actions',
-  feedback:'cat-feedback', referrals:'cat-referrals'
+const REFRESH = 60;
+const CAT_COLORS = {
+  meta:'#8888ff', public:'#44aaff', wallet:'#00e5a0',
+  policy:'#f5a623', x402:'#ff79c6', actions:'#bd93f9',
+  feedback:'#ff6e6e', referrals:'#50fa7b', networks:'#ff9966'
 };
+
+let activeFilter = 'all';
 
 function fmt(ts) {
   if (!ts) return '—';
-  const d = new Date(ts);
-  return d.toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'UTC'}) + ' UTC';
-}
-
-function statusIcon(s) {
-  if (s === 'pass') return '<span class="dot pass"></span>';
-  if (s === 'fail') return '<span class="dot fail"></span>';
-  return '<span class="dot warn"></span>';
+  return new Date(ts).toLocaleString('en-GB',{
+    day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',second:'2-digit',timeZone:'UTC'
+  }) + ' UTC';
 }
 
 function safeJson(d) {
   if (!d) return '';
   try {
-    const s = JSON.stringify(d);
-    return s.length > 200 ? s.slice(0,200)+'…' : s;
-  } catch { return String(d); }
+    const s = JSON.stringify(d, null, 0);
+    return s.length > 220 ? s.slice(0, 220) + '…' : s;
+  } catch { return String(d).slice(0, 220); }
+}
+
+function tierProgress(tier, refs) {
+  const map = {bronze:{next:'Silver',need:5,have:refs||0,max:5},
+                silver:{next:'Gold',need:25,have:refs||0,max:25},
+                gold:{next:'Diamond',need:100,have:refs||0,max:100},
+                diamond:{next:null,need:null,have:refs||0,max:100}};
+  const t = map[(tier||'bronze').toLowerCase()] || map.bronze;
+  const pct = t.next ? Math.min(100, Math.round((t.have / t.max) * 100)) : 100;
+  return {...t, pct};
+}
+
+function renderRankHero(meta) {
+  if (!meta.rank && !meta.tier) return '';
+  const tp = tierProgress(meta.tier, meta.referral_count);
+  const tierColor = {bronze:'#cd7f32',silver:'#aaa',gold:'var(--warn)',diamond:'#b9f2ff'}
+                    [(meta.tier||'bronze').toLowerCase()] || 'var(--warn)';
+  return `
+  <div class="rank-hero">
+    <div class="rank-num">#${meta.rank || '?'}</div>
+    <div class="rank-details">
+      <div class="rank-label">Global Rank</div>
+      <div class="rank-tier" style="color:${tierColor}">${(meta.tier||'bronze').toUpperCase()} TIER</div>
+      <div class="tier-bar-wrap">
+        <div class="tier-bar" style="width:${tp.pct}%"></div>
+      </div>
+      <div class="tier-label">
+        ${tp.next
+          ? `${meta.referral_count||0} refs → ${tp.next} needs ${tp.max} (${tp.max-(meta.referral_count||0)} to go)`
+          : '💎 MAX TIER — Diamond!'}
+      </div>
+    </div>
+    ${meta.airdrop_points != null ? `
+    <div style="text-align:right">
+      <div class="rank-label">Airdrop Points</div>
+      <div style="font-family:var(--sans);font-size:1.8rem;font-weight:800;color:var(--accent)">${meta.airdrop_points}</div>
+      <div style="font-size:.65rem;color:var(--muted);margin-top:2px">× ${
+        meta.tier === 'diamond' ? '3' : meta.tier === 'gold' ? '2'
+        : meta.tier === 'silver' ? '1.5' : '1'} multiplier</div>
+    </div>` : ''}
+  </div>`;
+}
+
+function renderRefBanner(meta, username) {
+  if (!username) return '';
+  const link = `https://frames.ag/connect?ref=${username}`;
+  const count = meta.referral_count || 0;
+  return `
+  <div class="ref-banner">
+    <div style="display:flex;gap:24px;flex-wrap:wrap">
+      <div class="ref-banner-left">
+        <div class="lbl">Referrals</div>
+        <div class="val">${count} agents onboarded</div>
+      </div>
+      <div class="ref-banner-left">
+        <div class="lbl">Your link</div>
+        <div class="val" style="font-size:.68rem;word-break:break-all">${link}</div>
+      </div>
+    </div>
+    <a class="ref-btn" href="${link}" target="_blank" rel="noopener">
+      🔗 Share Referral Link
+    </a>
+  </div>`;
+}
+
+function renderRealTx(meta) {
+  if (meta.real_x402_done) {
+    return `<div class="tx-badge">✅ Real TX sent · ${meta.real_x402_amount || '?'} on ${meta.real_x402_chain || '?'} · earning daily points</div>`;
+  }
+  return `<div class="tx-badge skip">⚠️ Real TX skipped — fund wallet at frames.ag/u/${location.search} to earn daily TX points</div>`;
 }
 
 function renderHistory(history) {
-  if (!history || !history.length) return '';
-  const max = Math.max(...history.map(h => h.passed + h.failed + h.warnings), 1);
+  if (!history?.length) return '';
+  const max = Math.max(...history.map(h => (h.passed||0)+(h.failed||0)+(h.warnings||0)), 1);
   const bars = [...history].reverse().map(h => {
-    const total = h.passed + h.failed + h.warnings || 1;
-    const pct = Math.max(8, Math.round((total / max) * 36));
+    const total = (h.passed||0)+(h.failed||0)+(h.warnings||0) || 1;
+    const pct = Math.max(8, Math.round((total/max)*40));
     const cls = h.failed > 0 ? 'fail' : h.warnings > 0 ? 'partial' : 'pass';
-    const tip = `${fmt(h.timestamp)}\n✅${h.passed} ❌${h.failed} ⚠️${h.warnings}`;
+    const tip = `${fmt(h.timestamp)}\n✅${h.passed} ❌${h.failed} ⚠️${h.warnings}${h.rank ? ' · #'+h.rank : ''}`;
     return `<div class="spark-bar ${cls}" style="height:${pct}px" title="${tip}"></div>`;
   }).join('');
+  // Pass rate
+  const last10 = history.slice(0,10);
+  const passRate = Math.round(last10.filter(h=>h.overall==='pass').length/last10.length*100);
   return `
-    <h2>Run History (last ${history.length})</h2>
-    <div class="history-wrap">
-      <div class="spark-row">${bars}</div>
-      <div style="display:flex;justify-content:space-between;font-size:.65rem;color:var(--muted);margin-top:4px;">
-        <span>oldest</span><span>latest</span>
-      </div>
-    </div>`;
+  <h2>Run History (${history.length} runs)</h2>
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;flex-wrap:wrap">
+    <span style="font-size:.72rem;color:var(--muted)">Last 10 pass rate:
+      <span style="color:${passRate>=80?'var(--accent2)':'var(--warn)'};font-weight:600">${passRate}%</span>
+    </span>
+  </div>
+  <div class="spark-row">${bars}</div>
+  <div class="history-meta"><span>oldest</span><span>latest →</span></div>`;
 }
 
-function renderMeta(meta) {
-  const chips = [];
-  if (meta.skill_version) chips.push(`<div class="meta-chip"><span class="k">skill</span><span class="v">v${meta.skill_version}</span></div>`);
-  if (meta.balance_usd !== null && meta.balance_usd !== undefined)
-    chips.push(`<div class="meta-chip"><span class="k">balance</span><span class="v">$${meta.balance_usd} USDC</span></div>`);
-  if (meta.rank) chips.push(`<div class="meta-chip"><span class="k">rank</span><span class="v">#${meta.rank}</span></div>`);
-  if (meta.tier) chips.push(`<div class="meta-chip"><span class="k">tier</span><span class="v">${meta.tier}</span></div>`);
-  if (meta.airdrop_points !== null && meta.airdrop_points !== undefined)
-    chips.push(`<div class="meta-chip"><span class="k">airdrop pts</span><span class="v">${meta.airdrop_points}</span></div>`);
-  if (meta.referral_count !== null && meta.referral_count !== undefined)
-    chips.push(`<div class="meta-chip"><span class="k">referrals</span><span class="v">${meta.referral_count}</span></div>`);
-  return chips.length ? `<div class="meta-strip">${chips.join('')}</div>` : '';
+function renderCategories(tests) {
+  const cats = ['all', ...new Set(tests.map(t=>t.category))];
+  return `<div class="filter-row" id="filters">
+    ${cats.map(c=>`<button class="filter-btn${c===activeFilter?' active':''}" onclick="setFilter('${c}')">${c}</button>`).join('')}
+  </div>`;
 }
 
-function render(status, history) {
-  const s = status.summary;
-  const overall = s.overall === 'pass' ? 'pass' : 'fail';
-  const overallLabel = overall === 'pass' ? '● ALL PASSING' : '✖ FAILURES DETECTED';
-
-  const rows = status.tests.map(t => {
-    const catDot = `<span class="cat-dot ${CAT_CLS[t.category]||''}"></span>`;
-    const errHtml = t.error ? `<div class="test-err">${t.error}</div>` : '';
-    const dataHtml = t.data ? `<div class="test-data">${safeJson(t.data)}</div>` : '';
-    return `<tr>
-      <td>${statusIcon(t.status)}</td>
+function renderTests(tests) {
+  const visible = activeFilter === 'all' ? tests : tests.filter(t => t.category === activeFilter);
+  const rows = visible.map(t => {
+    const col = CAT_COLORS[t.category] || '#aaa';
+    const dot = `<span class="cat-dot" style="background:${col}"></span>`;
+    return `<tr class="test-row" data-cat="${t.category}">
+      <td><span class="dot ${t.status}"></span></td>
       <td><div class="test-name">${t.name}</div></td>
-      <td><div class="test-cat">${catDot}${t.category}</div></td>
-      <td>${errHtml}${dataHtml}</td>
+      <td><div class="test-cat">${dot}${t.category}</div></td>
+      <td>
+        ${t.error ? `<div class="test-err">${t.error}</div>` : ''}
+        ${t.data  ? `<div class="test-data">${safeJson(t.data)}</div>` : ''}
+      </td>
       <td class="test-dur">${t.duration_ms}ms</td>
     </tr>`;
   }).join('');
-
-  document.getElementById('last-updated').textContent = fmt(status.timestamp);
-
   return `
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
-      <span class="badge ${overall}">${overallLabel}</span>
-      <span class="badge info">user: ${status.username}</span>
+  <div style="overflow-x:auto">
+    <table class="test-table">
+      <thead><tr>
+        <th></th><th>Test</th><th>Category</th><th>Details</th><th>ms</th>
+      </tr></thead>
+      <tbody>${rows || '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">No tests in this category</td></tr>'}</tbody>
+    </table>
+  </div>`;
+}
+
+let _status = null, _history = null;
+
+function render() {
+  if (!_status) return;
+  const s = _status.summary;
+  const meta = _status.meta || {};
+  const overall = s.failed > 0 ? 'fail' : s.warnings > 0 ? 'warn' : 'pass';
+  const bannerText = overall === 'pass' ? '● ALL SYSTEMS PASSING'
+                   : overall === 'warn' ? `⚠ ${s.warnings} WARNINGS (${s.passed}/${s.total} pass)`
+                   : `✖ ${s.failed} HARD FAILURES`;
+
+  document.getElementById('last-updated').textContent = fmt(_status.timestamp);
+
+  document.getElementById('app').innerHTML = `
+    <div class="status-banner ${overall}">
+      <div class="pulse ${overall}"></div>
+      <span>${bannerText}</span>
+      <span style="font-size:.72rem;opacity:.7;margin-left:auto">${_status.username}</span>
     </div>
 
-    ${renderMeta(status.meta || {})}
+    ${renderRankHero(meta)}
+    ${renderRefBanner(meta, _status.username)}
+
+    <div style="margin-bottom:20px">${renderRealTx(meta)}</div>
 
     <div class="summary-grid">
       <div class="card">
@@ -331,75 +375,82 @@ function render(status, history) {
       </div>
       <div class="card">
         <div class="card-label">Failed</div>
-        <div class="card-value ${s.failed > 0 ? 'red' : 'green'}">${s.failed}</div>
+        <div class="card-value ${s.failed>0?'red':'green'}">${s.failed}</div>
       </div>
       <div class="card">
         <div class="card-label">Warnings</div>
-        <div class="card-value ${s.warnings > 0 ? 'gold' : 'green'}">${s.warnings}</div>
+        <div class="card-value ${s.warnings>0?'gold':'green'}">${s.warnings}</div>
       </div>
+      ${meta.balance_usd != null ? `
+      <div class="card">
+        <div class="card-label">Balance</div>
+        <div class="card-value" style="font-size:1.3rem;color:var(--accent2)">$${meta.balance_usd}</div>
+        <div class="card-sub">USDC</div>
+      </div>` : ''}
+      ${meta.skill_version ? `
+      <div class="card">
+        <div class="card-label">Skill Version</div>
+        <div class="card-value" style="font-size:1.3rem;color:var(--muted)">v${meta.skill_version}</div>
+      </div>` : ''}
     </div>
 
-    ${renderHistory(history)}
+    ${renderHistory(_history)}
 
     <h2>Test Results</h2>
-    <div style="overflow-x:auto;">
-      <table class="test-table">
-        <thead>
-          <tr>
-            <th></th>
-            <th>Test Name</th>
-            <th>Category</th>
-            <th>Details</th>
-            <th>Duration</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>
+    ${renderCategories(_status.tests)}
+    ${renderTests(_status.tests)}
   `;
 }
 
-// ── Fetch and render
+function setFilter(cat) {
+  activeFilter = cat;
+  // re-render just the table + filters
+  const filtersEl = document.getElementById('filters');
+  if (filtersEl) {
+    filtersEl.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.toggle('active', b.textContent === cat);
+    });
+  }
+  // replace table area
+  const tableWrap = filtersEl?.nextElementSibling;
+  if (tableWrap) {
+    tableWrap.outerHTML = renderTests(_status?.tests || []);
+  }
+}
+
 async function loadData() {
-  const app = document.getElementById('app');
   try {
-    // Cache-bust with timestamp
-    const [sRes, hRes] = await Promise.all([
+    const [sr, hr] = await Promise.all([
       fetch(`status.json?t=${Date.now()}`),
-      fetch(`history.json?t=${Date.now()}`).catch(() => ({ ok:false }))
+      fetch(`history.json?t=${Date.now()}`).catch(()=>({ok:false}))
     ]);
-    if (!sRes.ok) throw new Error(`HTTP ${sRes.status}`);
-    const status  = await sRes.json();
-    const history = hRes.ok ? await hRes.json() : [];
-    app.innerHTML = render(status, history);
+    if (!sr.ok) throw new Error(`HTTP ${sr.status}`);
+    _status  = await sr.json();
+    _history = hr.ok ? await hr.json() : [];
+    render();
   } catch(e) {
-    app.innerHTML = `<div class="error-box">
-      ⚠️ Could not load status.json<br>
-      <small style="color:var(--muted);margin-top:8px;display:block">${e.message}</small>
-      <small style="color:var(--muted)">Make sure GitHub Actions has run at least once and GitHub Pages is enabled on the <strong>docs/</strong> folder.</small>
-    </div>`;
+    document.getElementById('app').innerHTML = `
+      <div class="error-box">
+        ⚠️ Cannot load status.json — ${e.message}<br>
+        <small style="color:var(--muted);display:block;margin-top:8px">
+          Make sure GitHub Actions has run and GitHub Pages is set to <strong>docs/</strong> folder.
+        </small>
+      </div>`;
   }
 }
 
-// ── Refresh countdown
-let remaining = REFRESH_SEC;
-const prog = document.getElementById('refresh-progress');
-const cd1  = document.getElementById('countdown');
-const cd2  = document.getElementById('countdown2');
-
-function tick() {
-  remaining--;
-  cd1.textContent = remaining;
-  cd2.textContent = remaining;
-  prog.style.width = (remaining / REFRESH_SEC * 100) + '%';
-  if (remaining <= 0) {
-    remaining = REFRESH_SEC;
-    loadData();
-  }
-}
+let rem = REFRESH;
+const rp = document.getElementById('rp');
+const cd = document.getElementById('cd');
+const cd2 = document.getElementById('cd2');
+setInterval(() => {
+  rem--;
+  cd.textContent = rem; cd2.textContent = rem;
+  rp.style.width = (rem/REFRESH*100)+'%';
+  if (rem <= 0) { rem = REFRESH; loadData(); }
+}, 1000);
 
 loadData();
-setInterval(tick, 1000);
 </script>
 </body>
 </html>
