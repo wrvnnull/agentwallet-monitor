@@ -581,6 +581,108 @@ def test_feedback_stuck():
     return _feedback("stuck", "[AUTO-MONITOR v4] Automated category test: stuck. Monitor ping.")
 
 
+
+def test_x402_free_endpoint():
+    """
+    Test x402/fetch against a FREE-tier endpoint.
+    STATUS=FREE means no payment charged — x402 protocol still processes it.
+    This is a distinct flow from paid endpoints.
+    """
+    time.sleep(2)
+    # Use a known free registry endpoint
+    payload = {
+        "url": "https://registry.frames.ag/api/service/exa/api/search",
+        "method": "POST",
+        "body": {"query": "free tier test", "numResults": 1},
+        "dryRun": True,  # dryRun to check if it's free without paying
+    }
+    d = _safe(requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
+                            headers=AUTH, json=payload, timeout=30))
+    p = d.get("payment", {})
+    status = p.get("status") or ("free" if not p.get("required") else "paid")
+    return {
+        "status": status,
+        "payment_required": p.get("required"),
+        "amount": p.get("amountFormatted"),
+        "chain": p.get("chain"),
+        "is_free": not p.get("required", True),
+    }
+
+
+def test_x402_real_free_fetch():
+    """
+    REAL fetch against free-tier endpoint — no balance needed.
+    STATUS=FREE in activity = this flow.
+    Earns TX points even when free!
+    """
+    time.sleep(2)
+    minute_key = datetime.datetime.utcnow().strftime("%Y%m%d-%H%M")
+    ikey = f"monitor-free-{minute_key}"
+    payload = {
+        "url": "https://registry.frames.ag/api/service/exa/api/search",
+        "method": "POST",
+        "body": {"query": f"AgentWallet free tier {minute_key}", "numResults": 1},
+        "idempotencyKey": ikey,
+        "timeout": 30000,
+        # No preferredChain/Token — let server decide (may be free)
+    }
+    try:
+        r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
+                          headers=AUTH, json=payload, timeout=60)
+    except requests.exceptions.Timeout:
+        raise AssertionError("Free fetch timed out (60s)")
+
+    if r.status_code in (429, 502, 503, 504):
+        raise AssertionError(f"Free fetch server error {r.status_code} — retry next run")
+    if r.status_code == 429:
+        raise AssertionError("Rate limited — retry next run")
+
+    r.raise_for_status()
+    d = r.json()
+
+    payment = d.get("payment", {})
+    paid    = d.get("paid", False)
+    success = d.get("success", False)
+    status  = payment.get("status", "unknown")
+
+    return {
+        "success":  success,
+        "paid":     paid,
+        "status":   status,          # "free" or "paid"
+        "amount":   payment.get("amountFormatted", "0"),
+        "chain":    payment.get("chain"),
+        "attempts": d.get("attempts"),
+        "ikey":     ikey,
+        "response_status": d.get("response", {}).get("status"),
+    }
+
+
+def test_x402_check_activity_free_events():
+    """
+    Verify recent activity contains PAYMENT FREE events.
+    Confirms free-tier x402 flow is being recorded correctly.
+    """
+    d = _safe(requests.get(f"{BASE_URL}/wallets/{USERNAME}/activity?limit=50",
+                           headers=AUTH, timeout=15))
+    events = d.get("data", d) or []
+    if not isinstance(events, list):
+        raise AssertionError("Activity response not a list")
+
+    x402_events = [e for e in events if "x402" in str(e.get("type","")).lower()
+                   or "payment" in str(e.get("type","")).lower()]
+    free_events  = [e for e in events if str(e.get("status","")).lower() == "free"
+                    or str(e.get("paymentStatus","")).lower() == "free"]
+    paid_events  = [e for e in events if str(e.get("status","")).lower() == "paid"
+                    or str(e.get("paymentStatus","")).lower() == "paid"]
+
+    return {
+        "total_events":  len(events),
+        "x402_events":   len(x402_events),
+        "free_payments": len(free_events),
+        "paid_payments": len(paid_events),
+        "event_types":   list({e.get("type","?") for e in events})[:8],
+    }
+
 # ─────────────────────────────────────────────────────────────
 # TEST REGISTRY — ordered by execution
 # ─────────────────────────────────────────────────────────────
@@ -626,6 +728,10 @@ TESTS = [
     ("x402 Legacy /pay endpoint",        "x402",      test_x402_legacy_pay_endpoint),
     # X402 REAL fetch — actual TX for points!
     ("x402 REAL Fetch (earns TX pts!)",  "x402",      test_x402_real_fetch),
+    # X402 FREE tier — STATUS=FREE flow
+    ("x402 Free Endpoint DryRun",         "x402",      test_x402_free_endpoint),
+    ("x402 REAL Free Fetch",              "x402",      test_x402_real_free_fetch),
+    ("x402 Activity FREE events check",   "x402",      test_x402_check_activity_free_events),
     # ACTIONS
     ("Sign Message Ethereum",            "actions",   test_sign_ethereum),
     ("Sign Message Solana",              "actions",   test_sign_solana),
