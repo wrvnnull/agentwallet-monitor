@@ -338,52 +338,54 @@ def test_x402_legacy_pay_endpoint():
 def test_x402_real_fetch():
     """
     REAL x402 fetch — actually pays & calls Exa search API.
-    This generates a real transaction → earns daily active points + weekly streak.
-    Only runs if balance > $0.05 (safety threshold).
-    Uses idempotencyKey to avoid double-charges on retry.
+    Generates a real TX → earns daily active points + weekly streak.
+    No pre-flight balance check (balance API format varies).
+    Uses per-minute idempotencyKey so retries don't double-charge.
+    insufficient_funds error → WARN (not FAIL).
     """
-    # First check balance
-    bal_r = requests.get(f"{BASE_URL}/wallets/{USERNAME}/balances", headers=AUTH, timeout=15)
-    bal_r.raise_for_status()
-    bal = bal_r.json().get("data", bal_r.json())
-    total_usd = bal.get("totalUsd") or bal.get("total_usd") or 0
-    try:
-        total_float = float(total_usd or 0)
-    except (TypeError, ValueError):
-        total_float = 0
-
-    if total_float < 0.05:
-        raise AssertionError(
-            f"Balance too low for real fetch (${total_float:.4f} < $0.05) — fund wallet to earn TX points"
-        )
-
-    # Use daily idempotency key so it's safe across retries within the same minute
     minute_key = datetime.datetime.utcnow().strftime("%Y%m%d-%H%M")
     ikey = f"monitor-real-{minute_key}"
 
     payload = {
         "url": X402_TARGET,
         "method": "POST",
-        "body": {"query": f"AgentWallet monitor run {minute_key}", "numResults": 1},
+        "body": {"query": f"AgentWallet monitor {minute_key}", "numResults": 1},
         "preferredChain": "evm",
         "preferredToken": "USDC",
         "idempotencyKey": ikey,
         "timeout": 30000,
     }
-    d = _safe(requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
-                            headers=AUTH, json=payload, timeout=60))
 
-    results["meta"]["real_x402_done"]   = d.get("paid", False) or d.get("success", False)
+    r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
+                      headers=AUTH, json=payload, timeout=60)
+
+    # insufficient_funds or policy_denied → WARN (soft)
+    if r.status_code in (402, 403):
+        d = r.json()
+        err = d.get("error","") or d.get("code","")
+        raise AssertionError(f"Payment blocked ({r.status_code}): {err}")
+
+    r.raise_for_status()
+    d = r.json()
+
+    # Check if it actually paid
+    paid = d.get("paid", False) or d.get("success", False)
+    if not paid:
+        err = d.get("error","") or d.get("code","")
+        raise AssertionError(f"Real fetch returned success=false: {err}")
+
+    results["meta"]["real_x402_done"]   = True
     results["meta"]["real_x402_amount"] = d.get("payment", {}).get("amountFormatted")
     results["meta"]["real_x402_chain"]  = d.get("payment", {}).get("chain")
 
-    resp_body = d.get("response", {})
+    resp = d.get("response", {})
     return {
-        "paid": d.get("paid"), "success": d.get("success"),
-        "amount": d.get("payment", {}).get("amountFormatted"),
-        "chain": d.get("payment", {}).get("chain"),
-        "attempts": d.get("attempts"),
-        "response_status": resp_body.get("status"),
+        "paid": True,
+        "amount":          d.get("payment", {}).get("amountFormatted"),
+        "chain":           d.get("payment", {}).get("chain"),
+        "attempts":        d.get("attempts"),
+        "response_status": resp.get("status"),
+        "duration_ms":     d.get("duration"),
         "idempotency_key": ikey,
     }
 
