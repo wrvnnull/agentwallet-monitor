@@ -1,11 +1,11 @@
 {
-  "timestamp": "2026-03-16T14:34:36Z",
+  "timestamp": "2026-03-16T14:51:51Z",
   "username": "irvaaanfauzi",
   "summary": {
     "total": 55,
-    "passed": 41,
+    "passed": 39,
     "failed": 0,
-    "warnings": 14,
+    "warnings": 16,
     "overall": "pass"
   },
   "tests": [
@@ -13,7 +13,7 @@
       "name": "Skill Version",
       "category": "meta",
       "status": "pass",
-      "duration_ms": 191,
+      "duration_ms": 189,
       "data": {
         "version": "0.1.12",
         "name": "agentwallet",
@@ -25,7 +25,7 @@
       "name": "Skill.json Full Metadata",
       "category": "meta",
       "status": "pass",
-      "duration_ms": 205,
+      "duration_ms": 141,
       "data": {
         "api_base": "https://frames.ag/api/v1",
         "x402_chains": [],
@@ -44,7 +44,7 @@
       "name": "Heartbeat.md Reachable",
       "category": "meta",
       "status": "pass",
-      "duration_ms": 179,
+      "duration_ms": 261,
       "data": {
         "bytes": 3083,
         "status": 200,
@@ -56,7 +56,7 @@
       "name": "Network Pulse",
       "category": "public",
       "status": "pass",
-      "duration_ms": 162,
+      "duration_ms": 230,
       "data": {
         "active_agents": null,
         "tx_count": null,
@@ -69,7 +69,7 @@
       "name": "Wallet Connected (public)",
       "category": "public",
       "status": "pass",
-      "duration_ms": 248,
+      "duration_ms": 210,
       "data": {
         "connected": true,
         "evm": "0x006aE819C09D...",
@@ -81,7 +81,7 @@
       "name": "Connect Start Endpoint",
       "category": "public",
       "status": "pass",
-      "duration_ms": 724,
+      "duration_ms": 298,
       "data": {
         "status_code": 200,
         "endpoint": "alive"
@@ -92,7 +92,7 @@
       "name": "Wallet Info",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 227,
+      "duration_ms": 198,
       "data": {
         "evm": "0x006aE819C09D...",
         "solana": "JBxX4ssBYhycMk..."
@@ -103,7 +103,7 @@
       "name": "Balances All Chains",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 685,
+      "duration_ms": 692,
       "data": {
         "total_usd": null,
         "raw": "{'username': 'irvaaanfauzi', 'displayName': 'irvaaanfauzi', 'moltbookUsername': None, 'evmWallets': [{'address': '0x006aE819C09D60b30d6c123a9910Ddfe5ec3fE7C', 'walletId': 'cd26d8c3-ad7a-4d91-8216-e9ce88337737', 'privyWalletId': 'vhbabfnpmsjrta6mrjix0eyz', 'balances': [{'chain': 'bsc', 'asset': 'bnb'"
@@ -114,7 +114,7 @@
       "name": "Activity Feed (authenticated)",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 240,
+      "duration_ms": 226,
       "data": {
         "event_count": "?",
         "event_types": []
@@ -125,7 +125,7 @@
       "name": "Activity Feed (public)",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 235,
+      "duration_ms": 221,
       "data": {
         "public_events": "?"
       },
@@ -135,7 +135,7 @@
       "name": "Stats & Rank",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 288,
+      "duration_ms": 255,
       "data": {
         "rank": 5,
         "tier": null,
@@ -150,7 +150,7 @@
       "name": "List Wallets",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 223,
+      "duration_ms": 209,
       "data": {
         "count": 2,
         "tier": "bronze",
@@ -169,7 +169,7 @@
       "name": "Create Wallet EVM",
       "category": "wallet",
       "status": "warn",
-      "duration_ms": 223,
+      "duration_ms": 208,
       "data": null,
       "error": "Tier limit (expected Bronze): Wallet limit reached for your tier (bronze). Limit: 1 per chain"
     },
@@ -177,7 +177,7 @@
       "name": "Create Wallet Solana",
       "category": "wallet",
       "status": "warn",
-      "duration_ms": 223,
+      "duration_ms": 199,
       "data": null,
       "error": "Tier limit (expected Bronze): Wallet limit reached for your tier (bronze). Limit: 1 per chain"
     },
@@ -185,7 +185,7 @@
       "name": "Referrals & Tier Progress",
       "category": "referrals",
       "status": "pass",
-      "duration_ms": 375,
+      "duration_ms": 209,
       "data": {
         "referral_count": 0,
         "multiplier": "1x Bronze",
@@ -199,7 +199,7 @@
       "name": "Policy GET",
       "category": "policy",
       "status": "pass",
-      "duration_ms": 371,
+      "duration_ms": 208,
       "data": {
         "max_per_tx_usd": null,
         "allow_chains": [],
@@ -212,7 +212,7 @@
       "name": "Policy PATCH/PUT",
       "category": "policy",
       "status": "warn",
-      "duration_ms": 487,
+      "duration_ms": 400,
       "data": null,
       "error": "Policy write 400 \u2014 Invalid request"
     },
@@ -220,7 +220,7 @@
       "name": "x402 DryRun auto-chain",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 1565,
+      "duration_ms": 1324,
       "data": {
         "dry_run": true,
         "required": true,
@@ -234,7 +234,7 @@
       "name": "x402 DryRun EVM",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 412,
+      "duration_ms": 418,
       "data": {
         "dry_run": true,
         "required": true,
@@ -248,7 +248,7 @@
       "name": "x402 DryRun Solana",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 400,
+      "duration_ms": 404,
       "data": {
         "dry_run": true,
         "required": true,
@@ -262,7 +262,7 @@
       "name": "x402 DryRun USDC token",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 676,
+      "duration_ms": 661,
       "data": {
         "dry_run": true,
         "required": true,
@@ -276,7 +276,7 @@
       "name": "x402 DryRun USDT token",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 872,
+      "duration_ms": 964,
       "data": {
         "dry_run": true,
         "required": true,
@@ -290,7 +290,7 @@
       "name": "x402 DryRun CASH token",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 736,
+      "duration_ms": 552,
       "data": {
         "dry_run": true,
         "required": true,
@@ -304,7 +304,7 @@
       "name": "x402 DryRun EVM+USDC",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 401,
+      "duration_ms": 403,
       "data": {
         "dry_run": true,
         "required": true,
@@ -318,7 +318,7 @@
       "name": "x402 DryRun EVM+USDT",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 448,
+      "duration_ms": 412,
       "data": {
         "dry_run": true,
         "required": true,
@@ -332,7 +332,7 @@
       "name": "x402 DryRun Solana+USDC",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 406,
+      "duration_ms": 537,
       "data": {
         "dry_run": true,
         "required": true,
@@ -346,7 +346,7 @@
       "name": "x402 DryRun Solana+CASH",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 403,
+      "duration_ms": 422,
       "data": {
         "dry_run": true,
         "required": true,
@@ -360,7 +360,7 @@
       "name": "x402 DryRun timeout option",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 1383,
+      "duration_ms": 1359,
       "data": {
         "dry_run": true,
         "required": true,
@@ -374,7 +374,7 @@
       "name": "x402 DryRun preferredChainId",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 1160,
+      "duration_ms": 1367,
       "data": {
         "dry_run": true,
         "required": true,
@@ -388,7 +388,7 @@
       "name": "x402 DryRun idempotencyKey",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 399,
+      "duration_ms": 341,
       "data": {
         "dry_run": true,
         "required": true,
@@ -402,7 +402,7 @@
       "name": "x402 Error INVALID_URL",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 353,
+      "duration_ms": 359,
       "data": {
         "error": "HTTPS required in production. HTTP is allowed automatically in development mode, or set X402_ALLOW_HTTP=true to override.",
         "code": "",
@@ -414,7 +414,7 @@
       "name": "x402 Legacy /pay endpoint",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 347,
+      "duration_ms": 356,
       "data": {
         "status_code": 400,
         "endpoint": "alive",
@@ -426,7 +426,7 @@
       "name": "x402 REAL Fetch (earns TX pts!)",
       "category": "x402",
       "status": "warn",
-      "duration_ms": 257,
+      "duration_ms": 212,
       "data": null,
       "error": "Balance too low for real fetch ($0.0000 < $0.05) \u2014 fund wallet to earn TX points"
     },
@@ -434,7 +434,7 @@
       "name": "Sign Message Ethereum",
       "category": "actions",
       "status": "pass",
-      "duration_ms": 567,
+      "duration_ms": 559,
       "data": {
         "chain": "ethereum",
         "signed": true
@@ -445,7 +445,7 @@
       "name": "Sign Message Solana",
       "category": "actions",
       "status": "pass",
-      "duration_ms": 609,
+      "duration_ms": 522,
       "data": {
         "chain": "solana",
         "signed": true
@@ -456,7 +456,7 @@
       "name": "Sign with walletAddress param",
       "category": "actions",
       "status": "pass",
-      "duration_ms": 567,
+      "duration_ms": 537,
       "data": {
         "chain": "ethereum",
         "signed": true,
@@ -468,7 +468,7 @@
       "name": "Faucet Solana Devnet",
       "category": "actions",
       "status": "warn",
-      "duration_ms": 361,
+      "duration_ms": 329,
       "data": null,
       "error": "Faucet rate-limited (3/24h) \u2014 used today already"
     },
@@ -476,10 +476,10 @@
       "name": "Transfer Base (8453)",
       "category": "networks",
       "status": "pass",
-      "duration_ms": 1711,
+      "duration_ms": 815,
       "data": {
         "status_code": 200,
-        "resp": "{'actionId': '3f3fd9a3-1536-45a8-be8b-73e162c3eb63', 'status': 'confirmed', 'txHash': '0x2abe90f878204876ac2b17b4c5b4420"
+        "resp": "{'actionId': '2cf0513e-27b5-48f2-baa7-6f5a378ab43c', 'status': 'confirmed', 'txHash': '0xebc0ebbf813ed1a318d8f0f03d4c2b6"
       },
       "error": null
     },
@@ -487,7 +487,7 @@
       "name": "Transfer Optimism (10)",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 776,
+      "duration_ms": 699,
       "data": null,
       "error": "chainId=10 returned 500 server error (server-side issue)"
     },
@@ -495,7 +495,7 @@
       "name": "Transfer Polygon (137)",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 4175,
+      "duration_ms": 1070,
       "data": null,
       "error": "chainId=137 returned 500 server error (server-side issue)"
     },
@@ -503,7 +503,7 @@
       "name": "Transfer Arbitrum (42161)",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 656,
+      "duration_ms": 710,
       "data": null,
       "error": "chainId=42161 returned 500 server error (server-side issue)"
     },
@@ -511,15 +511,15 @@
       "name": "Transfer BNB (56)",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 814,
+      "duration_ms": 30060,
       "data": null,
-      "error": "chainId=56 returned 500 server error (server-side issue)"
+      "error": "Chain 56 timed out (30s)"
     },
     {
       "name": "Transfer Ethereum (1)",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1428,
+      "duration_ms": 9037,
       "data": null,
       "error": "chainId=1 returned 500 server error (server-side issue)"
     },
@@ -527,7 +527,7 @@
       "name": "Transfer Gnosis (100)",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 2126,
+      "duration_ms": 1711,
       "data": null,
       "error": "chainId=100 returned 500 server error (server-side issue)"
     },
@@ -535,7 +535,7 @@
       "name": "Transfer Sepolia testnet",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 30062,
+      "duration_ms": 30060,
       "data": null,
       "error": "Chain 11155111 timed out (30s)"
     },
@@ -543,10 +543,10 @@
       "name": "Transfer Base Sepolia",
       "category": "networks",
       "status": "pass",
-      "duration_ms": 8102,
+      "duration_ms": 5805,
       "data": {
         "status_code": 200,
-        "resp": "{'actionId': 'afdb3124-2bae-48ca-bc92-c87e30b91e29', 'status': 'confirmed', 'txHash': '0x9d528b64ae4b73e0e90d48639dc0030"
+        "resp": "{'actionId': '59a2e10e-41b5-4f70-9318-7cb6673ae331', 'status': 'confirmed', 'txHash': '0x1f576b236dced38179173c745345148"
       },
       "error": null
     },
@@ -554,7 +554,7 @@
       "name": "Transfer + idempotencyKey",
       "category": "networks",
       "status": "pass",
-      "duration_ms": 378,
+      "duration_ms": 325,
       "data": {
         "status_code": 200,
         "resp": "{'actionId': '9a02931b-68b2-46e8-87fa-53ca83e2b90e', 'status': 'confirmed', 'txHash': '0xb73a726b3e0f9d5014baa0b07b1c637"
@@ -565,48 +565,42 @@
       "name": "Transfer Solana mainnet",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 542,
+      "duration_ms": 1070,
       "data": null,
       "error": "solana_mainnet returned 500 server error (server-side issue)"
     },
     {
       "name": "Transfer Solana devnet",
       "category": "networks",
-      "status": "pass",
-      "duration_ms": 1019,
-      "data": {
-        "status_code": 200,
-        "resp": "{'actionId': 'd18fa364-6d64-49dd-af36-6e61eac16439', 'status': 'confirmed', 'txHash': 'KMN3uu9ZNmJ8HkqaERotX17gAhZqNQTHt"
-      },
-      "error": null
+      "status": "warn",
+      "duration_ms": 197,
+      "data": null,
+      "error": "solana_devnet returned 429 rate-limit (server-side issue)"
     },
     {
       "name": "ContractCall EVM Base",
       "category": "networks",
-      "status": "pass",
-      "duration_ms": 774,
-      "data": {
-        "status_code": 200,
-        "resp": "{'actionId': 'b3f4da0a-5c38-4156-b69c-78b8ab2e79d6', 'status': 'confirmed', 'txHash': '0xe1f4bd86c572949f65468d64c14d57b"
-      },
-      "error": null
+      "status": "warn",
+      "duration_ms": 186,
+      "data": null,
+      "error": "evm_contract_call_base returned 429 rate-limit (server-side issue)"
     },
     {
       "name": "ContractCall Solana devnet",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 925,
+      "duration_ms": 180,
       "data": null,
-      "error": "solana_contract_call_devnet returned 500 server error (server-side issue)"
+      "error": "solana_contract_call_devnet returned 429 rate-limit (server-side issue)"
     },
     {
       "name": "Feedback category:other",
       "category": "feedback",
       "status": "pass",
-      "duration_ms": 245,
+      "duration_ms": 259,
       "data": {
         "category": "other",
-        "id": "5fe7d261-3886-41b7-bd89-483dbb252740"
+        "id": "30fa1074-9666-4f48-85cd-131f6f77ec59"
       },
       "error": null
     },
@@ -614,10 +608,10 @@
       "name": "Feedback category:bug",
       "category": "feedback",
       "status": "pass",
-      "duration_ms": 222,
+      "duration_ms": 232,
       "data": {
         "category": "bug",
-        "id": "bf3a98a3-c7f1-439e-acb4-1cba286cba6e"
+        "id": "764e145a-159e-443f-90f6-27436cd5e886"
       },
       "error": null
     },
@@ -625,10 +619,10 @@
       "name": "Feedback category:feature",
       "category": "feedback",
       "status": "pass",
-      "duration_ms": 207,
+      "duration_ms": 199,
       "data": {
         "category": "feature",
-        "id": "a62829c3-7e8a-4549-b54c-328f7387ea82"
+        "id": "570f1605-b4d9-4016-a411-d266a61e43d7"
       },
       "error": null
     },
@@ -636,10 +630,10 @@
       "name": "Feedback category:stuck",
       "category": "feedback",
       "status": "pass",
-      "duration_ms": 220,
+      "duration_ms": 218,
       "data": {
         "category": "stuck",
-        "id": "436a6ae4-b640-4e7f-8014-6cae3d4b508b"
+        "id": "47b1b81d-702b-45d3-8637-5318757512f4"
       },
       "error": null
     }
