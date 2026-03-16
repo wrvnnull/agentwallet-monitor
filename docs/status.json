@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-03-16T13:00:42Z",
+  "timestamp": "2026-03-16T13:04:11Z",
   "username": "irvaaanfauzi",
   "summary": {
     "total": 47,
@@ -13,7 +13,7 @@
       "name": "Skill Version",
       "category": "meta",
       "status": "pass",
-      "duration_ms": 295,
+      "duration_ms": 157,
       "data": {
         "version": "0.1.12",
         "name": "agentwallet"
@@ -24,7 +24,7 @@
       "name": "Skill.json Metadata",
       "category": "meta",
       "status": "pass",
-      "duration_ms": 162,
+      "duration_ms": 121,
       "data": {
         "api_base": "https://frames.ag/api/v1",
         "keywords": [
@@ -41,7 +41,7 @@
       "name": "Heartbeat.md",
       "category": "meta",
       "status": "pass",
-      "duration_ms": 159,
+      "duration_ms": 133,
       "data": {
         "bytes": 3083,
         "status": 200
@@ -52,7 +52,7 @@
       "name": "Network Pulse",
       "category": "public",
       "status": "pass",
-      "duration_ms": 312,
+      "duration_ms": 320,
       "data": {
         "active_agents": null,
         "tx_count": null,
@@ -65,7 +65,7 @@
       "name": "Wallet Connected (public)",
       "category": "public",
       "status": "pass",
-      "duration_ms": 298,
+      "duration_ms": 119,
       "data": {
         "connected": true,
         "evm": "0x006aE819C09D...",
@@ -77,7 +77,7 @@
       "name": "Wallet Info",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 136,
+      "duration_ms": 118,
       "data": {
         "evm": "0x006aE819C09D...",
         "solana": "JBxX4ssBYhycMk..."
@@ -88,7 +88,7 @@
       "name": "Balances",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 779,
+      "duration_ms": 207,
       "data": {
         "total_usd": null,
         "chains_preview": "{'username': 'irvaaanfauzi', 'displayName': 'irvaaanfauzi', 'moltbookUsername': None, 'evmWallets': [{'address': '0x006aE819C09D60b30d6c123a9910Ddfe5ec3fE7C', 'walletId': 'cd26d8c3-ad7a-4d91-8216-e9ce88337737', 'privyWalletId': 'vhbabfnpmsjrta6mrjix0"
@@ -99,7 +99,7 @@
       "name": "Activity (authenticated)",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 193,
+      "duration_ms": 300,
       "data": {
         "event_count": "?",
         "event_types": []
@@ -110,7 +110,7 @@
       "name": "Activity (public)",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 145,
+      "duration_ms": 131,
       "data": {
         "public_events": "?"
       },
@@ -120,7 +120,7 @@
       "name": "Stats & Rank",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 182,
+      "duration_ms": 252,
       "data": {
         "rank": 5,
         "tier": null,
@@ -134,7 +134,7 @@
       "name": "List Wallets",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 151,
+      "duration_ms": 177,
       "data": {
         "count": 2,
         "tier": "bronze",
@@ -153,7 +153,7 @@
       "name": "Create Wallet EVM",
       "category": "wallet",
       "status": "warn",
-      "duration_ms": 165,
+      "duration_ms": 133,
       "data": null,
       "error": "Tier limit reached: Wallet limit reached for your tier (bronze). Limit: 1 per chain"
     },
@@ -161,7 +161,7 @@
       "name": "Create Wallet Solana",
       "category": "wallet",
       "status": "warn",
-      "duration_ms": 124,
+      "duration_ms": 126,
       "data": null,
       "error": "Tier limit reached: Wallet limit reached for your tier (bronze). Limit: 1 per chain"
     },
@@ -169,7 +169,7 @@
       "name": "Referrals & Tier",
       "category": "referrals",
       "status": "pass",
-      "duration_ms": 133,
+      "duration_ms": 180,
       "data": {
         "referral_count": 0,
         "multiplier": "1x Bronze",
@@ -181,7 +181,7 @@
       "name": "Policy GET",
       "category": "policy",
       "status": "pass",
-      "duration_ms": 258,
+      "duration_ms": 268,
       "data": {
         "max_per_tx_usd": null,
         "allow_chains": []
@@ -192,7 +192,7 @@
       "name": "Policy PATCH/PUT",
       "category": "policy",
       "status": "fail",
-      "duration_ms": 283,
+      "duration_ms": 260,
       "data": null,
       "error": "400 Client Error: Bad Request for url: https://frames.ag/api/wallets/irvaaanfauzi/policy"
     },
@@ -200,7 +200,7 @@
       "name": "x402 DryRun auto-chain",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 2175,
+      "duration_ms": 4958,
       "data": {
         "dry_run": true,
         "payment_required": true,
@@ -214,7 +214,7 @@
       "name": "x402 DryRun EVM",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 275,
+      "duration_ms": 289,
       "data": {
         "dry_run": true,
         "payment_required": true,
@@ -228,7 +228,7 @@
       "name": "x402 DryRun Solana",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 232,
+      "duration_ms": 288,
       "data": {
         "dry_run": true,
         "payment_required": true,
@@ -242,7 +242,7 @@
       "name": "x402 DryRun USDC token",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 493,
+      "duration_ms": 513,
       "data": {
         "dry_run": true,
         "payment_required": true,
@@ -256,7 +256,7 @@
       "name": "x402 DryRun USDT token",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 622,
+      "duration_ms": 599,
       "data": {
         "dry_run": true,
         "payment_required": true,
@@ -270,7 +270,7 @@
       "name": "x402 DryRun CASH token",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 467,
+      "duration_ms": 609,
       "data": {
         "dry_run": true,
         "payment_required": true,
@@ -284,7 +284,7 @@
       "name": "x402 DryRun timeout option",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 1123,
+      "duration_ms": 1112,
       "data": {
         "dry_run": true,
         "payment_required": true,
@@ -298,7 +298,7 @@
       "name": "x402 DryRun EVM+USDC",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 298,
+      "duration_ms": 249,
       "data": {
         "dry_run": true,
         "payment_required": true,
@@ -312,7 +312,7 @@
       "name": "x402 DryRun Solana+USDC",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 268,
+      "duration_ms": 227,
       "data": {
         "dry_run": true,
         "payment_required": true,
@@ -326,7 +326,7 @@
       "name": "x402 Error INVALID_URL",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 199,
+      "duration_ms": 211,
       "data": {
         "error_code": "HTTPS required in production. HTTP is allowed automatically in development mode, or set X402_ALLOW_HTTP=true to override.",
         "status": 400
@@ -337,7 +337,7 @@
       "name": "x402 Legacy /pay endpoint",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 229,
+      "duration_ms": 153,
       "data": {
         "status_code": 400,
         "endpoint": "alive",
@@ -349,7 +349,7 @@
       "name": "Sign Message Ethereum",
       "category": "actions",
       "status": "pass",
-      "duration_ms": 548,
+      "duration_ms": 418,
       "data": {
         "chain": "ethereum",
         "signed": true
@@ -360,7 +360,7 @@
       "name": "Sign Message Solana",
       "category": "actions",
       "status": "pass",
-      "duration_ms": 341,
+      "duration_ms": 327,
       "data": {
         "chain": "solana",
         "signed": true
@@ -371,7 +371,7 @@
       "name": "Faucet Solana Devnet",
       "category": "actions",
       "status": "warn",
-      "duration_ms": 164,
+      "duration_ms": 161,
       "data": null,
       "error": "Faucet rate-limited (3/24h) \u2014 used today already"
     },
@@ -379,11 +379,11 @@
       "name": "Transfer Base (8453)",
       "category": "networks",
       "status": "pass",
-      "duration_ms": 669,
+      "duration_ms": 541,
       "data": {
         "chainId": 8453,
         "status_code": 200,
-        "resp": "{'actionId': '548ad756-694c-4ba1-8432-c5cbe575f09a', 'status': 'confirmed', 'txHash': '0xf51f1fb1bda"
+        "resp": "{'actionId': 'da833add-4fa1-4bbd-ad23-765ff69c867b', 'status': 'confirmed', 'txHash': '0xbde8596e9fd"
       },
       "error": null
     },
@@ -391,7 +391,7 @@
       "name": "Transfer Optimism (10)",
       "category": "networks",
       "status": "fail",
-      "duration_ms": 619,
+      "duration_ms": 628,
       "data": null,
       "error": "500 Server Error: Internal Server Error for url: https://frames.ag/api/wallets/irvaaanfauzi/actions/transfer"
     },
@@ -399,7 +399,7 @@
       "name": "Transfer Polygon (137)",
       "category": "networks",
       "status": "fail",
-      "duration_ms": 8842,
+      "duration_ms": 3214,
       "data": null,
       "error": "500 Server Error: Internal Server Error for url: https://frames.ag/api/wallets/irvaaanfauzi/actions/transfer"
     },
@@ -407,7 +407,7 @@
       "name": "Transfer Arbitrum (42161)",
       "category": "networks",
       "status": "fail",
-      "duration_ms": 471,
+      "duration_ms": 436,
       "data": null,
       "error": "500 Server Error: Internal Server Error for url: https://frames.ag/api/wallets/irvaaanfauzi/actions/transfer"
     },
@@ -415,15 +415,15 @@
       "name": "Transfer BNB (56)",
       "category": "networks",
       "status": "fail",
-      "duration_ms": 659,
+      "duration_ms": 15054,
       "data": null,
-      "error": "500 Server Error: Internal Server Error for url: https://frames.ag/api/wallets/irvaaanfauzi/actions/transfer"
+      "error": "HTTPSConnectionPool(host='frames.ag', port=443): Read timed out. (read timeout=15)"
     },
     {
       "name": "Transfer Ethereum (1)",
       "category": "networks",
       "status": "fail",
-      "duration_ms": 8624,
+      "duration_ms": 8455,
       "data": null,
       "error": "500 Server Error: Internal Server Error for url: https://frames.ag/api/wallets/irvaaanfauzi/actions/transfer"
     },
@@ -431,7 +431,7 @@
       "name": "Transfer Gnosis (100)",
       "category": "networks",
       "status": "fail",
-      "duration_ms": 1534,
+      "duration_ms": 1535,
       "data": null,
       "error": "500 Server Error: Internal Server Error for url: https://frames.ag/api/wallets/irvaaanfauzi/actions/transfer"
     },
@@ -439,7 +439,7 @@
       "name": "Transfer Sepolia testnet",
       "category": "networks",
       "status": "fail",
-      "duration_ms": 15055,
+      "duration_ms": 15057,
       "data": null,
       "error": "HTTPSConnectionPool(host='frames.ag', port=443): Read timed out. (read timeout=15)"
     },
@@ -447,11 +447,11 @@
       "name": "Transfer Base Sepolia",
       "category": "networks",
       "status": "pass",
-      "duration_ms": 3728,
+      "duration_ms": 6212,
       "data": {
         "chainId": 84532,
         "status_code": 200,
-        "resp": "{'actionId': '01ff02b7-68df-48ad-95bc-4fd853d6b3cc', 'status': 'confirmed', 'txHash': '0x7d01d0e0246"
+        "resp": "{'actionId': '9572737d-25a6-43eb-a809-a682882d48c2', 'status': 'confirmed', 'txHash': '0x4b9a3e708f2"
       },
       "error": null
     },
@@ -459,7 +459,7 @@
       "name": "Transfer Solana mainnet",
       "category": "networks",
       "status": "fail",
-      "duration_ms": 4302,
+      "duration_ms": 1199,
       "data": null,
       "error": "500 Server Error: Internal Server Error for url: https://frames.ag/api/wallets/irvaaanfauzi/actions/transfer-solana"
     },
@@ -467,11 +467,11 @@
       "name": "Transfer Solana devnet",
       "category": "networks",
       "status": "pass",
-      "duration_ms": 1061,
+      "duration_ms": 1929,
       "data": {
         "network": "solana_devnet",
         "status_code": 200,
-        "resp": "{'actionId': '221e28b2-817f-4dfd-aa80-9789217baeb1', 'status': 'confirmed', 'txHash': 'Ytx311hnopRHC"
+        "resp": "{'actionId': '9f273849-426d-489b-97cc-c8c23dce55aa', 'status': 'confirmed', 'txHash': '4p95PAoRDTUP3"
       },
       "error": null
     },
@@ -479,11 +479,11 @@
       "name": "ContractCall EVM Base",
       "category": "networks",
       "status": "pass",
-      "duration_ms": 558,
+      "duration_ms": 746,
       "data": {
         "type": "evm",
         "status_code": 200,
-        "resp": "{'actionId': '02ea4241-6375-46ff-b0a8-bf2daafe097e', 'status': 'confirmed', 'txHash': '0x8f39ee9c3ec"
+        "resp": "{'actionId': '14bbb638-237c-4a6b-b4ee-473e9feeed81', 'status': 'confirmed', 'txHash': '0x147affeaadf"
       },
       "error": null
     },
@@ -491,7 +491,7 @@
       "name": "ContractCall Solana devnet",
       "category": "networks",
       "status": "fail",
-      "duration_ms": 710,
+      "duration_ms": 795,
       "data": null,
       "error": "500 Server Error: Internal Server Error for url: https://frames.ag/api/wallets/irvaaanfauzi/actions/contract-call"
     },
@@ -499,10 +499,10 @@
       "name": "Feedback category:other",
       "category": "feedback",
       "status": "pass",
-      "duration_ms": 134,
+      "duration_ms": 131,
       "data": {
         "category": "other",
-        "id": "df9fc0f7-9478-478f-9947-2f61de72f9f7"
+        "id": "5e0f7a2c-0976-4dd9-8886-f51da4f3c328"
       },
       "error": null
     },
@@ -510,10 +510,10 @@
       "name": "Feedback category:bug",
       "category": "feedback",
       "status": "pass",
-      "duration_ms": 123,
+      "duration_ms": 156,
       "data": {
         "category": "bug",
-        "id": "d50cf894-0fe1-4fd6-8e95-e66cca374b7a"
+        "id": "55d631f1-7a76-416a-8ed4-458e51546173"
       },
       "error": null
     },
@@ -521,10 +521,10 @@
       "name": "Feedback category:feature",
       "category": "feedback",
       "status": "pass",
-      "duration_ms": 125,
+      "duration_ms": 131,
       "data": {
         "category": "feature",
-        "id": "72a9cd82-bdc4-47d3-9f74-9f3d9b9e92a1"
+        "id": "285c03b2-5246-4007-b461-7b279075210b"
       },
       "error": null
     },
@@ -532,10 +532,10 @@
       "name": "Feedback category:stuck",
       "category": "feedback",
       "status": "pass",
-      "duration_ms": 136,
+      "duration_ms": 127,
       "data": {
         "category": "stuck",
-        "id": "98b109bc-5e6c-45f4-bf09-6d86e3ba2b87"
+        "id": "5d96576a-f6cc-4ff6-9b1d-d6ca7e370143"
       },
       "error": null
     }
