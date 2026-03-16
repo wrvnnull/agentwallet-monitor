@@ -1015,3 +1015,373 @@ elif warned > 0:
 else:
     print("  PERFECT RUN!")
     sys.exit(0)
+
+# ═══════════════════════════════════════════════════════════════
+# PATCH v5.1 — All missing features appended below
+# ═══════════════════════════════════════════════════════════════
+
+# ── x402 REAL paid fetch (per-hour ikey) ────────────────────
+def test_x402_real_paid_fetch():
+    """Real x402 paid call via exa — earns TX points each hour."""
+    return _x402_fetch(
+        url=f"{REG_URL}/exa/api/search",
+        method="POST",
+        body={"query": f"x402 payment protocol {KEY_HOUR}", "numResults": 1},
+        ikey=f"real-paid-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+def test_x402_preferred_token_address():
+    """x402 with preferredTokenAddress (USDC contract on Base)."""
+    time.sleep(2)
+    payload = {
+        "url": f"{REG_URL}/exa/api/search",
+        "method": "POST",
+        "body": {"query": "test token address", "numResults": 1},
+        "dryRun": True,
+        "preferredChain": "evm",
+        # USDC contract on Base
+        "preferredTokenAddress": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "idempotencyKey": f"tokaddr-{KEY_HOUR}",
+    }
+    d = _safe(requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
+                            headers=AUTH, json=payload, timeout=30))
+    p = d.get("payment", {})
+    return {"dry_run": True, "chain": p.get("chain"), "amount": p.get("amountFormatted")}
+
+def test_x402_with_wallet_address_param():
+    """x402/fetch with explicit walletAddress param."""
+    evm = results["meta"]["evm_address"] or ""
+    if not evm:
+        raise AssertionError("No EVM address yet")
+    time.sleep(2)
+    payload = {
+        "url": f"{REG_URL}/exa/api/search",
+        "method": "POST",
+        "body": {"query": "wallet address param test", "numResults": 1},
+        "dryRun": True,
+        "walletAddress": evm,
+        "idempotencyKey": f"waddr-{KEY_HOUR}",
+    }
+    d = _safe(requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
+                            headers=AUTH, json=payload, timeout=30))
+    p = d.get("payment", {})
+    return {"dry_run": True, "wallet_address_used": evm[:14]+"...",
+            "chain": p.get("chain")}
+
+# ── Transfer with walletAddress param ───────────────────────
+def test_transfer_evm_wallet_address():
+    """EVM transfer using explicit walletAddress param."""
+    time.sleep(1.2)
+    evm = results["meta"]["evm_address"] or EVM_DUMMY
+    r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/transfer",
+                      headers=AUTH,
+                      json={"to": evm, "amount": "1", "asset": "usdc",
+                            "chainId": 8453, "walletAddress": evm},
+                      timeout=20)
+    return _network_check(r, "evm_transfer_walletAddress")
+
+def test_transfer_sol_wallet_address():
+    """Solana transfer using explicit walletAddress param."""
+    time.sleep(1.2)
+    sol = results["meta"]["solana_address"] or SOLANA_DUMMY
+    try:
+        r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/transfer-solana",
+                          headers=AUTH,
+                          json={"to": sol, "amount": "1", "asset": "sol",
+                                "network": "devnet", "walletAddress": sol},
+                          timeout=20)
+    except requests.exceptions.Timeout:
+        raise AssertionError("Solana transfer walletAddress timed out")
+    return _network_check(r, "sol_transfer_walletAddress")
+
+# ── ContractCall rawTransaction modes ───────────────────────
+def test_contract_call_evm_raw_tx():
+    """EVM contract-call with rawTransaction hex field."""
+    time.sleep(1.2)
+    # Minimal valid-looking hex tx (will be rejected but endpoint alive)
+    raw_hex = "0x02f86d01808459682f00850c92a69c0082520894" + "00"*20 + "8080c0"
+    try:
+        r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/contract-call",
+                          headers=AUTH,
+                          json={"chainType": "ethereum",
+                                "rawTransaction": raw_hex, "chainId": 8453},
+                          timeout=20)
+    except requests.exceptions.Timeout:
+        raise AssertionError("EVM rawTx timed out")
+    return _network_check(r, "evm_raw_transaction")
+
+def test_contract_call_solana_raw_tx():
+    """Solana contract-call with rawTransaction base64 field."""
+    time.sleep(1.2)
+    import base64
+    # Minimal placeholder base64 tx
+    raw_b64 = base64.b64encode(b"\x01" + b"\x00"*63).decode()
+    try:
+        r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/contract-call",
+                          headers=AUTH,
+                          json={"chainType": "solana",
+                                "rawTransaction": raw_b64, "network": "devnet"},
+                          timeout=20)
+    except requests.exceptions.Timeout:
+        raise AssertionError("Solana rawTx timed out")
+    return _network_check(r, "solana_raw_transaction")
+
+# ── Faucet with walletAddress param ─────────────────────────
+def test_faucet_with_wallet_address():
+    """Faucet with explicit walletAddress param."""
+    sol = results["meta"]["solana_address"] or ""
+    if not sol:
+        raise AssertionError("No Solana address yet")
+    r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/faucet-sol",
+                      headers=AUTH,
+                      json={"walletAddress": sol}, timeout=30)
+    if r.status_code == 429:
+        raise AssertionError("Faucet rate-limited (3/24h)")
+    r.raise_for_status()
+    inner = r.json().get("data", r.json())
+    return {"amount": inner.get("amount"), "remaining": inner.get("remaining"),
+            "walletAddress_param": sol[:14]+"..."}
+
+# ── TEST service — /api/invoke ───────────────────────────────
+def test_registry_test_invoke():
+    """$0.001 — test service /api/invoke endpoint."""
+    return _x402_fetch(
+        url=f"{REG_URL}/test/api/invoke",
+        method="POST",
+        body={"prompt": f"ping {KEY_RUN}"},
+        ikey=f"test-invoke-{KEY_RUN}",
+        chain="evm", token="USDC",
+    )
+
+# ── EXA — /api/contents ─────────────────────────────────────
+def test_registry_exa_contents():
+    """$0.01 — fetch page contents via Exa."""
+    return _x402_fetch(
+        url=f"{REG_URL}/exa/api/contents",
+        method="POST",
+        body={"ids": ["https://frames.ag"]},
+        ikey=f"exa-contents-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+# ── COINGECKO — /api/token-info ─────────────────────────────
+def test_registry_coingecko_token_info():
+    """$0.003 — token info by id."""
+    return _x402_fetch(
+        url=f"{REG_URL}/coingecko/api/token-info",
+        method="POST",
+        body={"id": "solana"},
+        ikey=f"cg-tokeninfo-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+# ── JUPITER — /api/portfolio, /api/swap (dryRun via dryRun=true) ────────────
+def test_registry_jupiter_portfolio():
+    """$0.01 — Jupiter portfolio."""
+    return _x402_fetch(
+        url=f"{REG_URL}/jupiter/api/portfolio",
+        method="POST",
+        body={"wallet": results["meta"]["solana_address"] or SOLANA_DUMMY},
+        ikey=f"jup-portfolio-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+# ── NEAR-INTENTS — /api/status ──────────────────────────────
+def test_registry_near_status():
+    """$0.01 — near-intents status check."""
+    return _x402_fetch(
+        url=f"{REG_URL}/near-intents/api/status",
+        method="POST",
+        body={"intentId": "monitor-test"},
+        ikey=f"near-status-{KEY_HOUR}",
+        chain="evm", token="USDC",
+    )
+
+# ── AGENTMAIL — /api/threads, /api/send ─────────────────────
+def test_registry_agentmail_threads():
+    """$2.00 — list threads. Per-day."""
+    return _x402_fetch(
+        url=f"{REG_URL}/agentmail/api/threads",
+        method="GET",
+        ikey=f"agentmail-threads-{KEY_DAY}",
+        chain="evm", token="USDC", timeout_ms=60000,
+    )
+
+def test_registry_agentmail_send():
+    """$2.00 — send email. Per-day."""
+    return _x402_fetch(
+        url=f"{REG_URL}/agentmail/api/send",
+        method="POST",
+        body={"to": "monitor@example.invalid",
+              "subject": f"Monitor test {KEY_DAY}",
+              "body": "Automated monitor test email."},
+        ikey=f"agentmail-send-{KEY_DAY}",
+        chain="evm", token="USDC", timeout_ms=60000,
+    )
+
+# ── AI-GEN — more models ─────────────────────────────────────
+def test_registry_ai_gen_z_image_turbo():
+    """$0.006 — Pruna Z-Image Turbo (2nd cheapest)."""
+    return _x402_fetch(
+        url=f"{REG_URL}/ai-gen/api/invoke",
+        method="POST",
+        body={"owner": "prunaai", "name": "z-image-turbo",
+              "input": {"prompt": f"minimal geometric logo {KEY_HOUR}",
+                        "aspect_ratio": "1:1"}},
+        ikey=f"aigen-z-{KEY_HOUR}",
+        chain="evm", token="USDC", timeout_ms=60000,
+    )
+
+def test_registry_ai_gen_imagen4_fast():
+    """$0.03 — Google Imagen 4 Fast."""
+    return _x402_fetch(
+        url=f"{REG_URL}/ai-gen/api/invoke",
+        method="POST",
+        body={"owner": "google", "name": "imagen-4-fast",
+              "input": {"prompt": f"abstract art digital {KEY_HOUR}",
+                        "aspect_ratio": "1:1"}},
+        ikey=f"aigen-imagen4-{KEY_HOUR}",
+        chain="evm", token="USDC", timeout_ms=60000,
+    )
+
+def test_registry_ai_gen_ideogram():
+    """$0.04 — Ideogram V3 Turbo."""
+    return _x402_fetch(
+        url=f"{REG_URL}/ai-gen/api/invoke",
+        method="POST",
+        body={"owner": "ideogram", "name": "v3-turbo",
+              "input": {"prompt": f"futuristic city neon {KEY_HOUR}",
+                        "aspect_ratio": "1:1"}},
+        ikey=f"aigen-ideogram-{KEY_HOUR}",
+        chain="evm", token="USDC", timeout_ms=60000,
+    )
+
+# ── OPENROUTER — more models ─────────────────────────────────
+def _openrouter_chat(model, ikey):
+    time.sleep(2)
+    payload = {
+        "url": f"{REG_URL}/openrouter/v1/chat/completions",
+        "method": "POST",
+        "body": {
+            "model": model,
+            "messages": [{"role": "user",
+                          "content": f"One word reply: ok. Key:{KEY_HOUR}"}],
+            "max_tokens": 5,
+        },
+        "preferredChain": "evm", "preferredToken": "USDC",
+        "idempotencyKey": ikey, "timeout": 30000,
+    }
+    try:
+        r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
+                          headers=AUTH, json=payload, timeout=60)
+    except requests.exceptions.Timeout:
+        raise AssertionError(f"OpenRouter {model} timed out")
+    if r.status_code in (429, 502, 503, 504):
+        raise AssertionError(f"OpenRouter {model} server error {r.status_code}")
+    r.raise_for_status()
+    d = r.json()
+    resp = d.get("response", {}).get("body", {})
+    choice = resp.get("choices",[{}])[0].get("message",{}).get("content","") if resp else ""
+    return {"model": model, "paid": d.get("paid"),
+            "amount": d.get("payment",{}).get("amountFormatted","?"),
+            "reply": str(choice)[:30]}
+
+def test_openrouter_claude_haiku():
+    return _openrouter_chat("anthropic/claude-haiku-4-5",
+                            f"or-claude-{KEY_HOUR}")
+def test_openrouter_gemini_flash():
+    return _openrouter_chat("google/gemini-2.0-flash-001",
+                            f"or-gemini-{KEY_HOUR}")
+def test_openrouter_llama():
+    return _openrouter_chat("meta-llama/llama-3.1-8b-instruct:free",
+                            f"or-llama-{KEY_HOUR}")
+def test_openrouter_mistral():
+    return _openrouter_chat("mistralai/mistral-7b-instruct:free",
+                            f"or-mistral-{KEY_HOUR}")
+
+# ── TWITTER — remaining endpoints ────────────────────────────
+def test_registry_twitter_user_tweets():
+    return _x402_fetch(
+        url=f"{REG_URL}/twitter/api/user-tweets",
+        method="POST", body={"userName": "frames_ag", "count": 5},
+        ikey=f"tw-usertweets-{KEY_HOUR}", chain="evm", token="USDC")
+
+def test_registry_twitter_user_followers():
+    return _x402_fetch(
+        url=f"{REG_URL}/twitter/api/user-followers",
+        method="POST", body={"userName": "frames_ag"},
+        ikey=f"tw-followers-{KEY_HOUR}", chain="evm", token="USDC")
+
+def test_registry_twitter_search_users():
+    return _x402_fetch(
+        url=f"{REG_URL}/twitter/api/search-users",
+        method="POST", body={"query": "AgentWallet"},
+        ikey=f"tw-searchusers-{KEY_HOUR}", chain="evm", token="USDC")
+
+def test_registry_twitter_user_mentions():
+    return _x402_fetch(
+        url=f"{REG_URL}/twitter/api/user-mentions",
+        method="POST", body={"userName": "frames_ag"},
+        ikey=f"tw-mentions-{KEY_HOUR}", chain="evm", token="USDC")
+
+def test_registry_twitter_user_following():
+    return _x402_fetch(
+        url=f"{REG_URL}/twitter/api/user-following",
+        method="POST", body={"userName": "frames_ag"},
+        ikey=f"tw-following-{KEY_HOUR}", chain="evm", token="USDC")
+
+def test_registry_twitter_tweet_replies():
+    # Use a known tweet — frames_ag pinned or recent
+    return _x402_fetch(
+        url=f"{REG_URL}/twitter/api/tweet-replies",
+        method="POST", body={"tweetId": "1"},
+        ikey=f"tw-replies-{KEY_HOUR}", chain="evm", token="USDC")
+
+# ═══════════════════════════════════════════════════════════════
+# APPEND TO TESTS LIST
+# ═══════════════════════════════════════════════════════════════
+_EXTRA_TESTS = [
+    # x402 extra options
+    ("x402 REAL Paid Fetch $0.01",          "x402",      test_x402_real_paid_fetch),
+    ("x402 preferredTokenAddress",          "x402",      test_x402_preferred_token_address),
+    ("x402 walletAddress param",            "x402",      test_x402_with_wallet_address_param),
+    # Transfer extra params
+    ("Transfer EVM walletAddress",          "networks",  test_transfer_evm_wallet_address),
+    ("Transfer Solana walletAddress",       "networks",  test_transfer_sol_wallet_address),
+    # ContractCall rawTransaction
+    ("ContractCall EVM rawTransaction",     "networks",  test_contract_call_evm_raw_tx),
+    ("ContractCall Solana rawTransaction",  "networks",  test_contract_call_solana_raw_tx),
+    # Faucet walletAddress
+    ("Faucet walletAddress param",          "actions",   test_faucet_with_wallet_address),
+    # Registry — test service
+    ("Registry: test/invoke $0.001",        "registry",  test_registry_test_invoke),
+    # Registry — exa missing endpoint
+    ("Registry: exa/contents $0.01",        "registry",  test_registry_exa_contents),
+    # Registry — coingecko missing
+    ("Registry: coingecko/token-info",      "registry",  test_registry_coingecko_token_info),
+    # Registry — Jupiter missing
+    ("Registry: jupiter/portfolio $0.01",   "registry",  test_registry_jupiter_portfolio),
+    # Registry — near-intents missing
+    ("Registry: near-intents/status",       "registry",  test_registry_near_status),
+    # Registry — agentmail missing
+    ("Registry: agentmail/threads $2.00",   "registry",  test_registry_agentmail_threads),
+    ("Registry: agentmail/send $2.00",      "registry",  test_registry_agentmail_send),
+    # Registry — AI-gen more models
+    ("Registry: ai-gen/z-image $0.006",     "registry",  test_registry_ai_gen_z_image_turbo),
+    ("Registry: ai-gen/imagen4-fast $0.03", "registry",  test_registry_ai_gen_imagen4_fast),
+    ("Registry: ai-gen/ideogram $0.04",     "registry",  test_registry_ai_gen_ideogram),
+    # Registry — OpenRouter more models
+    ("OpenRouter: claude-haiku",            "registry",  test_openrouter_claude_haiku),
+    ("OpenRouter: gemini-2-flash",          "registry",  test_openrouter_gemini_flash),
+    ("OpenRouter: llama-3.1-8b (free)",     "registry",  test_openrouter_llama),
+    ("OpenRouter: mistral-7b (free)",       "registry",  test_openrouter_mistral),
+    # Registry — Twitter remaining
+    ("Registry: twitter/user-tweets",       "registry",  test_registry_twitter_user_tweets),
+    ("Registry: twitter/user-followers",    "registry",  test_registry_twitter_user_followers),
+    ("Registry: twitter/search-users",      "registry",  test_registry_twitter_search_users),
+    ("Registry: twitter/user-mentions",     "registry",  test_registry_twitter_user_mentions),
+    ("Registry: twitter/user-following",    "registry",  test_registry_twitter_user_following),
+    ("Registry: twitter/tweet-replies",     "registry",  test_registry_twitter_tweet_replies),
+]
+TESTS.extend(_EXTRA_TESTS)
