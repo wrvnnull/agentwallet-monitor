@@ -356,14 +356,18 @@ def test_x402_real_fetch():
         "timeout": 30000,
     }
 
-    r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
-                      headers=AUTH, json=payload, timeout=60)
+    try:
+        r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/x402/fetch",
+                          headers=AUTH, json=payload, timeout=60)
+    except requests.exceptions.Timeout:
+        raise AssertionError("Real fetch timed out (60s) — server busy, retry next run")
 
-    # insufficient_funds or policy_denied → WARN (soft)
+    # Soft errors → WARN
     if r.status_code in (402, 403):
         d = r.json()
-        err = d.get("error","") or d.get("code","")
-        raise AssertionError(f"Payment blocked ({r.status_code}): {err}")
+        raise AssertionError(f"Payment blocked ({r.status_code}): {d.get('error','') or d.get('code','')}")
+    if r.status_code in (429, 502, 503, 504):
+        raise AssertionError(f"Real fetch server error {r.status_code} — retry next run")
 
     r.raise_for_status()
     d = r.json()
@@ -452,6 +456,7 @@ EVM_DUMMY    = "0x0000000000000000000000000000000000000001"
 SOLANA_DUMMY = "11111111111111111111111111111111"
 
 def _evm_transfer(chain_id, timeout_s=20, extra=None):
+    time.sleep(1.2)  # avoid 429 rate-limit across sequential network tests
     to_addr = results["meta"]["evm_address"] or EVM_DUMMY
     payload = {"to": to_addr, "amount": "1", "asset": "usdc", "chainId": chain_id}
     if extra:
@@ -479,6 +484,7 @@ def test_transfer_with_idempotency():
     return _evm_transfer(8453, extra={"idempotencyKey": ikey})
 
 def test_transfer_sol_mainnet():
+    time.sleep(1.2)
     to_addr = results["meta"]["solana_address"] or SOLANA_DUMMY
     try:
         r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/transfer-solana",
@@ -491,6 +497,7 @@ def test_transfer_sol_mainnet():
     return _network_check(r, "solana_mainnet")
 
 def test_transfer_sol_devnet():
+    time.sleep(1.2)
     to_addr = results["meta"]["solana_address"] or SOLANA_DUMMY
     try:
         r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/transfer-solana",
@@ -503,6 +510,7 @@ def test_transfer_sol_devnet():
     return _network_check(r, "solana_devnet")
 
 def test_contract_call_evm():
+    time.sleep(1.2)
     try:
         r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/contract-call",
                           headers=AUTH,
@@ -514,6 +522,7 @@ def test_contract_call_evm():
     return _network_check(r, "evm_contract_call_base")
 
 def test_contract_call_solana():
+    time.sleep(1.2)
     try:
         r = requests.post(f"{BASE_URL}/wallets/{USERNAME}/actions/contract-call",
                           headers=AUTH,
