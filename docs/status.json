@@ -1,19 +1,19 @@
 {
-  "timestamp": "2026-03-21T01:08:38Z",
+  "timestamp": "2026-03-21T03:28:59Z",
   "username": "syvairaa",
   "summary": {
     "total": 111,
-    "passed": 76,
-    "failed": 3,
-    "warnings": 32,
-    "overall": "fail"
+    "passed": 83,
+    "failed": 0,
+    "warnings": 28,
+    "overall": "pass"
   },
   "tests": [
     {
       "name": "Skill Version",
       "category": "meta",
       "status": "pass",
-      "duration_ms": 342,
+      "duration_ms": 661,
       "data": {
         "version": "0.1.12"
       },
@@ -23,7 +23,7 @@
       "name": "Skill.json Metadata",
       "category": "meta",
       "status": "pass",
-      "duration_ms": 272,
+      "duration_ms": 208,
       "data": {
         "api_base": "https://frames.ag/api/v1"
       },
@@ -33,7 +33,7 @@
       "name": "Heartbeat.md",
       "category": "meta",
       "status": "pass",
-      "duration_ms": 365,
+      "duration_ms": 583,
       "data": {
         "bytes": 3083
       },
@@ -43,7 +43,7 @@
       "name": "Network Pulse",
       "category": "public",
       "status": "pass",
-      "duration_ms": 414,
+      "duration_ms": 705,
       "data": {
         "active_agents": null,
         "tx_count": null
@@ -54,7 +54,7 @@
       "name": "Wallet Connected (public)",
       "category": "public",
       "status": "pass",
-      "duration_ms": 350,
+      "duration_ms": 400,
       "data": {
         "connected": true,
         "evm": "0x81C54cd2E303..."
@@ -65,7 +65,7 @@
       "name": "Connect Start Endpoint",
       "category": "public",
       "status": "pass",
-      "duration_ms": 933,
+      "duration_ms": 885,
       "data": {
         "status_code": 200
       },
@@ -75,7 +75,7 @@
       "name": "Registry Services List",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 179,
+      "duration_ms": 226,
       "data": {
         "count": 10
       },
@@ -85,7 +85,7 @@
       "name": "Registry: twitter health",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 131,
+      "duration_ms": 205,
       "data": {
         "status": "healthy"
       },
@@ -95,7 +95,7 @@
       "name": "Registry: ai-gen health",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 122,
+      "duration_ms": 174,
       "data": {
         "status": "healthy"
       },
@@ -105,7 +105,7 @@
       "name": "Registry: test health",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 262,
+      "duration_ms": 256,
       "data": {
         "status": "healthy"
       },
@@ -115,7 +115,7 @@
       "name": "Registry: exa health",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 135,
+      "duration_ms": 146,
       "data": {
         "status": "healthy"
       },
@@ -125,7 +125,7 @@
       "name": "Registry: wordspace health",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 119,
+      "duration_ms": 167,
       "data": {
         "status": "healthy"
       },
@@ -135,7 +135,7 @@
       "name": "Registry: openrouter health",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 129,
+      "duration_ms": 150,
       "data": {
         "status": "healthy"
       },
@@ -145,7 +145,7 @@
       "name": "Registry: jupiter health",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 148,
+      "duration_ms": 208,
       "data": {
         "status": "healthy"
       },
@@ -155,7 +155,7 @@
       "name": "Registry: near-intents health",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 144,
+      "duration_ms": 151,
       "data": {
         "status": "healthy"
       },
@@ -165,7 +165,7 @@
       "name": "Registry: agentmail health",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 139,
+      "duration_ms": 159,
       "data": {
         "status": "healthy"
       },
@@ -175,7 +175,7 @@
       "name": "Registry: coingecko health",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 131,
+      "duration_ms": 152,
       "data": {
         "status": "healthy"
       },
@@ -185,10 +185,10 @@
       "name": "Registry: test/echo [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1671,
+      "duration_ms": 1579,
       "data": {
         "dry_run": true,
-        "would_pay": "0.00 0X036CBD53842C5426634E7929541EC2318F3DCF7E",
+        "would_pay": "0.00 USDC",
         "chain": "eip155:84532",
         "required": true
       },
@@ -198,7 +198,7 @@
       "name": "Registry: test/networks [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1473,
+      "duration_ms": 1462,
       "data": {
         "dry_run": true,
         "would_pay": "?",
@@ -211,10 +211,10 @@
       "name": "Registry: test/invoke [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1445,
+      "duration_ms": 1472,
       "data": {
         "dry_run": true,
-        "would_pay": "0.00 0X036CBD53842C5426634E7929541EC2318F3DCF7E",
+        "would_pay": "0.00 USDC",
         "chain": "eip155:84532",
         "required": true
       },
@@ -224,10 +224,10 @@
       "name": "Registry: coingecko/price [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1461,
+      "duration_ms": 1553,
       "data": {
         "dry_run": true,
-        "would_pay": "0.00 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.00 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -237,7 +237,7 @@
       "name": "Registry: coingecko/trending [dry]",
       "category": "registry",
       "status": "warn",
-      "duration_ms": 1406,
+      "duration_ms": 1446,
       "data": null,
       "error": "x402/fetch server error (500)"
     },
@@ -245,10 +245,10 @@
       "name": "Registry: coingecko/search [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1408,
+      "duration_ms": 1448,
       "data": {
         "dry_run": true,
-        "would_pay": "0.00 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.00 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -258,10 +258,10 @@
       "name": "Registry: coingecko/markets [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1435,
+      "duration_ms": 1475,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.00 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -271,10 +271,10 @@
       "name": "Registry: coingecko/token-info [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1436,
+      "duration_ms": 1446,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.00 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -284,10 +284,10 @@
       "name": "Registry: exa/search [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1425,
+      "duration_ms": 1453,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.01 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -297,10 +297,10 @@
       "name": "Registry: exa/answer [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1427,
+      "duration_ms": 1489,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.01 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -310,10 +310,10 @@
       "name": "Registry: exa/find-similar [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1422,
+      "duration_ms": 1476,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.01 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -323,10 +323,10 @@
       "name": "Registry: exa/contents [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1617,
+      "duration_ms": 1453,
       "data": {
         "dry_run": true,
-        "would_pay": "0.00 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.00 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -336,10 +336,10 @@
       "name": "Registry: twitter/search [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1434,
+      "duration_ms": 1492,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.01 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -349,10 +349,10 @@
       "name": "Registry: twitter/trends [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1429,
+      "duration_ms": 1477,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.01 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -362,10 +362,10 @@
       "name": "Registry: twitter/user-info [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1520,
+      "duration_ms": 1453,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.00 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -375,10 +375,10 @@
       "name": "Registry: twitter/user-tweets [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1465,
+      "duration_ms": 1441,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.01 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -388,10 +388,10 @@
       "name": "Registry: twitter/followers [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1458,
+      "duration_ms": 1506,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.01 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -401,10 +401,10 @@
       "name": "Registry: twitter/search-users [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1421,
+      "duration_ms": 1453,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.01 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -414,10 +414,10 @@
       "name": "Registry: twitter/mentions [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1439,
+      "duration_ms": 1454,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.01 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -427,10 +427,10 @@
       "name": "Registry: twitter/following [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1472,
+      "duration_ms": 1437,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.01 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -440,10 +440,10 @@
       "name": "Registry: twitter/replies [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1486,
+      "duration_ms": 1616,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.01 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -453,7 +453,7 @@
       "name": "Registry: near/tokens [dry]",
       "category": "registry",
       "status": "warn",
-      "duration_ms": 1405,
+      "duration_ms": 1436,
       "data": null,
       "error": "x402/fetch server error (500)"
     },
@@ -461,10 +461,10 @@
       "name": "Registry: near/quote [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1438,
+      "duration_ms": 1475,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.01 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -474,7 +474,7 @@
       "name": "Registry: near/status [dry]",
       "category": "registry",
       "status": "warn",
-      "duration_ms": 1417,
+      "duration_ms": 1476,
       "data": null,
       "error": "x402/fetch server error (500)"
     },
@@ -482,10 +482,10 @@
       "name": "Registry: jupiter/price [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1416,
+      "duration_ms": 1437,
       "data": {
         "dry_run": true,
-        "would_pay": "0.00 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.00 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -495,7 +495,7 @@
       "name": "Registry: jupiter/tokens [dry]",
       "category": "registry",
       "status": "warn",
-      "duration_ms": 1469,
+      "duration_ms": 1441,
       "data": null,
       "error": "x402/fetch server error (500)"
     },
@@ -503,10 +503,10 @@
       "name": "Registry: jupiter/portfolio [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1462,
+      "duration_ms": 1428,
       "data": {
         "dry_run": true,
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "0.00 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -516,7 +516,7 @@
       "name": "Registry: ai-gen/models (gratis)",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 614,
+      "duration_ms": 159,
       "data": {
         "model_count": 10,
         "cheapest": "schnell",
@@ -528,10 +528,10 @@
       "name": "Registry: ai-gen/schnell [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1434,
+      "duration_ms": 1457,
       "data": {
         "dry_run": true,
-        "would_pay": "1.08 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "1.08 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -541,10 +541,10 @@
       "name": "Registry: ai-gen/z-image [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1436,
+      "duration_ms": 1454,
       "data": {
         "dry_run": true,
-        "would_pay": "1.08 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "1.08 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -554,10 +554,10 @@
       "name": "Registry: ai-gen/imagen4 [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1448,
+      "duration_ms": 1460,
       "data": {
         "dry_run": true,
-        "would_pay": "1.08 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "1.08 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -567,10 +567,10 @@
       "name": "Registry: ai-gen/ideogram [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1439,
+      "duration_ms": 1449,
       "data": {
         "dry_run": true,
-        "would_pay": "1.08 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
+        "would_pay": "1.08 USDC",
         "chain": "eip155:8453",
         "required": true
       },
@@ -580,7 +580,7 @@
       "name": "Registry: openrouter/gpt4o-mini [dry]",
       "category": "registry",
       "status": "warn",
-      "duration_ms": 1406,
+      "duration_ms": 1447,
       "data": null,
       "error": "x402/fetch server error (500)"
     },
@@ -588,7 +588,7 @@
       "name": "Registry: openrouter/claude [dry]",
       "category": "registry",
       "status": "warn",
-      "duration_ms": 1412,
+      "duration_ms": 1451,
       "data": null,
       "error": "x402/fetch server error (500)"
     },
@@ -596,7 +596,7 @@
       "name": "Registry: openrouter/gemini [dry]",
       "category": "registry",
       "status": "warn",
-      "duration_ms": 1429,
+      "duration_ms": 1453,
       "data": null,
       "error": "x402/fetch server error (500)"
     },
@@ -604,7 +604,7 @@
       "name": "Registry: openrouter/llama [dry]",
       "category": "registry",
       "status": "warn",
-      "duration_ms": 1444,
+      "duration_ms": 1421,
       "data": null,
       "error": "x402/fetch server error (500)"
     },
@@ -612,39 +612,54 @@
       "name": "Registry: openrouter/mistral [dry]",
       "category": "registry",
       "status": "warn",
-      "duration_ms": 1414,
+      "duration_ms": 1435,
       "data": null,
       "error": "x402/fetch server error (500)"
     },
     {
       "name": "Registry: agentmail/inbox [dry]",
       "category": "registry",
-      "status": "warn",
-      "duration_ms": 6450,
-      "data": null,
-      "error": "x402/fetch server error (500)"
+      "status": "pass",
+      "duration_ms": 1378,
+      "data": {
+        "dry_run": true,
+        "would_pay": "?",
+        "chain": null,
+        "required": null
+      },
+      "error": null
     },
     {
       "name": "Registry: agentmail/messages [dry]",
       "category": "registry",
-      "status": "warn",
-      "duration_ms": 1495,
-      "data": null,
-      "error": "x402/fetch server error (500)"
+      "status": "pass",
+      "duration_ms": 1397,
+      "data": {
+        "dry_run": true,
+        "would_pay": "?",
+        "chain": null,
+        "required": null
+      },
+      "error": null
     },
     {
       "name": "Registry: agentmail/threads [dry]",
       "category": "registry",
-      "status": "warn",
-      "duration_ms": 1450,
-      "data": null,
-      "error": "x402/fetch server error (500)"
+      "status": "pass",
+      "duration_ms": 1378,
+      "data": {
+        "dry_run": true,
+        "would_pay": "?",
+        "chain": null,
+        "required": null
+      },
+      "error": null
     },
     {
       "name": "Registry: agentmail/send [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1660,
+      "duration_ms": 1383,
       "data": {
         "dry_run": true,
         "would_pay": "0.01 USDC",
@@ -657,7 +672,7 @@
       "name": "Registry: wordspace/invoke [dry]",
       "category": "registry",
       "status": "pass",
-      "duration_ms": 1420,
+      "duration_ms": 1405,
       "data": {
         "dry_run": true,
         "would_pay": "2.00 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913",
@@ -670,7 +685,7 @@
       "name": "Wallet Info",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 295,
+      "duration_ms": 257,
       "data": {
         "evm": "0x81C54cd2E303...",
         "solana": "H2SGfcyWjb2ZhM..."
@@ -681,7 +696,7 @@
       "name": "Balances",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 816,
+      "duration_ms": 852,
       "data": {
         "total_usd": null
       },
@@ -691,7 +706,7 @@
       "name": "Activity (auth)",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 383,
+      "duration_ms": 390,
       "data": {
         "event_count": "?"
       },
@@ -711,7 +726,7 @@
       "name": "Stats & Rank",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 588,
+      "duration_ms": 443,
       "data": {
         "rank": 8,
         "tier": null,
@@ -724,7 +739,7 @@
       "name": "List Wallets",
       "category": "wallet",
       "status": "pass",
-      "duration_ms": 369,
+      "duration_ms": 437,
       "data": {
         "count": 2,
         "tier": "bronze"
@@ -735,7 +750,7 @@
       "name": "Create Wallet EVM",
       "category": "wallet",
       "status": "warn",
-      "duration_ms": 228,
+      "duration_ms": 265,
       "data": null,
       "error": "Tier limit (expected Bronze): Wallet limit reached for your tier (bronze). Limit: 1 per chain"
     },
@@ -743,7 +758,7 @@
       "name": "Create Wallet Solana",
       "category": "wallet",
       "status": "warn",
-      "duration_ms": 221,
+      "duration_ms": 247,
       "data": null,
       "error": "Tier limit (expected Bronze): Wallet limit reached for your tier (bronze). Limit: 1 per chain"
     },
@@ -751,7 +766,7 @@
       "name": "Referrals & Tier",
       "category": "referrals",
       "status": "pass",
-      "duration_ms": 388,
+      "duration_ms": 379,
       "data": {
         "referral_count": 0,
         "link": "https://frames.ag/connect?ref=syvairaa"
@@ -762,7 +777,7 @@
       "name": "Policy GET",
       "category": "policy",
       "status": "pass",
-      "duration_ms": 371,
+      "duration_ms": 372,
       "data": {
         "max_per_tx_usd": null,
         "allow_chains": []
@@ -773,7 +788,7 @@
       "name": "Policy PATCH/PUT",
       "category": "policy",
       "status": "warn",
-      "duration_ms": 439,
+      "duration_ms": 486,
       "data": null,
       "error": "Policy write 400 \u2014 Invalid request"
     },
@@ -781,11 +796,11 @@
       "name": "x402 DryRun auto-chain",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 1478,
+      "duration_ms": 2865,
       "data": {
         "required": true,
-        "chain": "eip155:8453",
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913"
+        "chain": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "would_pay": "0.01 USDC"
       },
       "error": null
     },
@@ -793,31 +808,35 @@
       "name": "x402 DryRun EVM",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 1443,
+      "duration_ms": 1437,
       "data": {
         "required": true,
         "chain": "eip155:8453",
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913"
+        "would_pay": "0.01 USDC"
       },
       "error": null
     },
     {
       "name": "x402 DryRun Solana",
       "category": "x402",
-      "status": "fail",
-      "duration_ms": 1404,
-      "data": null,
-      "error": "400 Client Error: Bad Request for url: https://frames.ag/api/wallets/syvairaa/actions/x402/fetch"
+      "status": "pass",
+      "duration_ms": 1533,
+      "data": {
+        "required": true,
+        "chain": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "would_pay": "0.01 USDC"
+      },
+      "error": null
     },
     {
       "name": "x402 DryRun USDC",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 1420,
+      "duration_ms": 2059,
       "data": {
         "required": true,
         "chain": "eip155:8453",
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913"
+        "would_pay": "0.01 USDC"
       },
       "error": null
     },
@@ -825,11 +844,11 @@
       "name": "x402 DryRun USDT",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 1417,
+      "duration_ms": 1924,
       "data": {
         "required": true,
         "chain": "eip155:8453",
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913"
+        "would_pay": "0.01 USDT"
       },
       "error": null
     },
@@ -837,11 +856,11 @@
       "name": "x402 DryRun CASH",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 1425,
+      "duration_ms": 1680,
       "data": {
         "required": true,
-        "chain": "eip155:8453",
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913"
+        "chain": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "would_pay": "0.01 CASH"
       },
       "error": null
     },
@@ -849,11 +868,11 @@
       "name": "x402 DryRun chainId",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 1443,
+      "duration_ms": 2402,
       "data": {
         "required": true,
-        "chain": "eip155:8453",
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913"
+        "chain": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "would_pay": "0.01 USDC"
       },
       "error": null
     },
@@ -861,11 +880,11 @@
       "name": "x402 DryRun idempotencyKey",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 1429,
+      "duration_ms": 2339,
       "data": {
         "required": true,
-        "chain": "eip155:8453",
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913"
+        "chain": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "would_pay": "0.01 USDC"
       },
       "error": null
     },
@@ -873,11 +892,11 @@
       "name": "x402 DryRun timeout",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 1432,
+      "duration_ms": 2570,
       "data": {
         "required": true,
-        "chain": "eip155:8453",
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913"
+        "chain": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "would_pay": "0.01 USDC"
       },
       "error": null
     },
@@ -885,39 +904,47 @@
       "name": "x402 DryRun EVM+USDC",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 1447,
+      "duration_ms": 1433,
       "data": {
         "required": true,
         "chain": "eip155:8453",
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913"
+        "would_pay": "0.01 USDC"
       },
       "error": null
     },
     {
       "name": "x402 DryRun Solana+USDC",
       "category": "x402",
-      "status": "fail",
-      "duration_ms": 1420,
-      "data": null,
-      "error": "400 Client Error: Bad Request for url: https://frames.ag/api/wallets/syvairaa/actions/x402/fetch"
+      "status": "pass",
+      "duration_ms": 1430,
+      "data": {
+        "required": true,
+        "chain": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "would_pay": "0.01 USDC"
+      },
+      "error": null
     },
     {
       "name": "x402 DryRun Solana+CASH",
       "category": "x402",
-      "status": "fail",
-      "duration_ms": 1424,
-      "data": null,
-      "error": "400 Client Error: Bad Request for url: https://frames.ag/api/wallets/syvairaa/actions/x402/fetch"
+      "status": "pass",
+      "duration_ms": 1452,
+      "data": {
+        "required": true,
+        "chain": "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "would_pay": "0.01 CASH"
+      },
+      "error": null
     },
     {
       "name": "x402 DryRun tokenAddress",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 1448,
+      "duration_ms": 1567,
       "data": {
         "required": true,
         "chain": "eip155:8453",
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913"
+        "would_pay": "0.01 USDC"
       },
       "error": null
     },
@@ -925,11 +952,11 @@
       "name": "x402 DryRun walletAddress",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 1471,
+      "duration_ms": 1437,
       "data": {
         "required": true,
         "chain": "eip155:8453",
-        "would_pay": "0.01 0X833589FCD6EDB6E08F4C7C32D4F71B54BDA02913"
+        "would_pay": "0.01 USDC"
       },
       "error": null
     },
@@ -937,7 +964,7 @@
       "name": "x402 Error INVALID_URL",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 365,
+      "duration_ms": 392,
       "data": {
         "error": "HTTPS required in production. HTTP is allowed automatically in development mode, or set X402_ALLOW_HTTP=true to override.",
         "status": 400
@@ -948,7 +975,7 @@
       "name": "x402 Legacy /pay endpoint",
       "category": "x402",
       "status": "pass",
-      "duration_ms": 486,
+      "duration_ms": 552,
       "data": {
         "status_code": 400,
         "alive": true
@@ -959,7 +986,7 @@
       "name": "Sign Message Ethereum",
       "category": "actions",
       "status": "pass",
-      "duration_ms": 1655,
+      "duration_ms": 1731,
       "data": {
         "chain": "ethereum",
         "signed": true
@@ -970,7 +997,7 @@
       "name": "Sign Message Solana",
       "category": "actions",
       "status": "pass",
-      "duration_ms": 1611,
+      "duration_ms": 1612,
       "data": {
         "chain": "solana",
         "signed": true
@@ -981,7 +1008,7 @@
       "name": "Sign walletAddress param",
       "category": "actions",
       "status": "pass",
-      "duration_ms": 1550,
+      "duration_ms": 1553,
       "data": {
         "signed": true,
         "walletAddress": "0x81C54cd2E303..."
@@ -992,7 +1019,7 @@
       "name": "Transfer Base (8453)",
       "category": "networks",
       "status": "pass",
-      "duration_ms": 1870,
+      "duration_ms": 1811,
       "data": {
         "status_code": 400,
         "resp": "{'error': 'Insufficient funds for gas', 'details': '400 {\"error\":\"The total cost (gas * gas fee + value) of executing th"
@@ -1003,47 +1030,50 @@
       "name": "Transfer Optimism (10)",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1190,
+      "duration_ms": 6906,
       "data": null,
-      "error": "chainId=10 returned 429 rate-limit"
+      "error": "chainId=10 returned 500 server error"
     },
     {
       "name": "Transfer Polygon (137)",
       "category": "networks",
-      "status": "warn",
-      "duration_ms": 1190,
-      "data": null,
-      "error": "chainId=137 returned 429 rate-limit"
+      "status": "pass",
+      "duration_ms": 1713,
+      "data": {
+        "status_code": 400,
+        "resp": "{'error': 'Insufficient funds for gas', 'details': '400 {\"error\":\"The total cost (gas * gas fee + value) of executing th"
+      },
+      "error": null
     },
     {
       "name": "Transfer Arbitrum (42161)",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1187,
+      "duration_ms": 2209,
       "data": null,
-      "error": "chainId=42161 returned 429 rate-limit"
+      "error": "chainId=42161 returned 500 server error"
     },
     {
       "name": "Transfer BNB (56)",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1191,
+      "duration_ms": 2947,
       "data": null,
-      "error": "chainId=56 returned 429 rate-limit"
+      "error": "chainId=56 returned 500 server error"
     },
     {
       "name": "Transfer Ethereum (1)",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1233,
+      "duration_ms": 2179,
       "data": null,
-      "error": "chainId=1 returned 429 rate-limit"
+      "error": "chainId=1 returned 500 server error"
     },
     {
       "name": "Transfer Gnosis (100)",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1124,
+      "duration_ms": 1219,
       "data": null,
       "error": "chainId=100 returned 429 rate-limit"
     },
@@ -1051,7 +1081,7 @@
       "name": "Transfer Sepolia",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1127,
+      "duration_ms": 1212,
       "data": null,
       "error": "chainId=11155111 returned 429 rate-limit"
     },
@@ -1059,7 +1089,7 @@
       "name": "Transfer Base Sepolia",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1124,
+      "duration_ms": 1223,
       "data": null,
       "error": "chainId=84532 returned 429 rate-limit"
     },
@@ -1067,7 +1097,7 @@
       "name": "Transfer + idempotencyKey",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1127,
+      "duration_ms": 1172,
       "data": null,
       "error": "chainId=8453 returned 429 rate-limit"
     },
@@ -1075,7 +1105,7 @@
       "name": "Transfer EVM walletAddress",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1119,
+      "duration_ms": 1147,
       "data": null,
       "error": "chainId=8453 returned 429 rate-limit"
     },
@@ -1083,7 +1113,7 @@
       "name": "Transfer Solana mainnet",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1115,
+      "duration_ms": 1152,
       "data": null,
       "error": "solana_mainnet returned 429 rate-limit"
     },
@@ -1091,7 +1121,7 @@
       "name": "Transfer Solana devnet",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1123,
+      "duration_ms": 1152,
       "data": null,
       "error": "solana_devnet returned 429 rate-limit"
     },
@@ -1099,7 +1129,7 @@
       "name": "Transfer Solana walletAddress",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1158,
+      "duration_ms": 1163,
       "data": null,
       "error": "sol_walletAddress returned 429 rate-limit"
     },
@@ -1107,7 +1137,7 @@
       "name": "ContractCall EVM Base",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1130,
+      "duration_ms": 1151,
       "data": null,
       "error": "evm_contract_call returned 429 rate-limit"
     },
@@ -1115,7 +1145,7 @@
       "name": "ContractCall Solana devnet",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1121,
+      "duration_ms": 1158,
       "data": null,
       "error": "solana_contract_call returned 429 rate-limit"
     },
@@ -1123,7 +1153,7 @@
       "name": "ContractCall EVM rawTransaction",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1122,
+      "duration_ms": 1151,
       "data": null,
       "error": "evm_raw_transaction returned 429 rate-limit"
     },
@@ -1131,7 +1161,7 @@
       "name": "ContractCall Solana rawTransaction",
       "category": "networks",
       "status": "warn",
-      "duration_ms": 1120,
+      "duration_ms": 1188,
       "data": null,
       "error": "solana_raw_transaction returned 429 rate-limit"
     },
@@ -1139,10 +1169,10 @@
       "name": "Feedback category:other",
       "category": "feedback",
       "status": "pass",
-      "duration_ms": 331,
+      "duration_ms": 388,
       "data": {
         "category": "other",
-        "id": "e83ec816-ee26-41f9-83d9-898a8d330835"
+        "id": "4e968057-5a05-417f-ab9e-266a3b657322"
       },
       "error": null
     },
@@ -1150,10 +1180,10 @@
       "name": "Feedback category:bug",
       "category": "feedback",
       "status": "pass",
-      "duration_ms": 227,
+      "duration_ms": 253,
       "data": {
         "category": "bug",
-        "id": "2673910f-40df-4c46-8fd7-8e93a8b98391"
+        "id": "3c895c40-54d2-419d-a469-51dc779d8423"
       },
       "error": null
     },
@@ -1161,10 +1191,10 @@
       "name": "Feedback category:feature",
       "category": "feedback",
       "status": "pass",
-      "duration_ms": 221,
+      "duration_ms": 268,
       "data": {
         "category": "feature",
-        "id": "f7399197-2813-4298-bf4c-3fe074b0274d"
+        "id": "4ea5f54f-6ea0-4459-858f-e93c735f0b05"
       },
       "error": null
     },
@@ -1172,10 +1202,10 @@
       "name": "Feedback category:stuck",
       "category": "feedback",
       "status": "pass",
-      "duration_ms": 215,
+      "duration_ms": 256,
       "data": {
         "category": "stuck",
-        "id": "992b3c31-7256-486a-91bb-1f70afcebbcb"
+        "id": "bb1e250b-f720-429b-9ece-4d5dee9d9ac9"
       },
       "error": null
     }
